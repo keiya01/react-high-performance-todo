@@ -30,6 +30,7 @@
 ### Code Splitting について  
 - ちゃんと理解するCode Splitting - Qiita ... https://qiita.com/seya/items/06b160adb7801ae9e66f 
 - Code Splitting - Webpack ... https://webpack.js.org/guides/code-splitting/
+- The Manifest - Webpack ... https://webpack.js.org/concepts/manifest/
 - Code Splitting - React ... https://ja.reactjs.org/docs/code-splitting.html
 - Code Splitting - create-react-app ... https://create-react-app.dev/docs/code-splitting/  
 
