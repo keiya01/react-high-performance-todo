@@ -35,5 +35,17 @@ module.exports = {
 		contentBase: path.resolve(__dirname, "dist"),
 		compress: true,
 		port: 3000
+	},
+	optimization: {
+		runtimeChunk: "single",
+		splitChunks: {
+			cacheGroups: {
+				vendor: {
+					test: /node_modules/,
+					name: "vendors",
+					chunks: "all"
+				}
+			}
+		}
 	}
 };
