@@ -5,8 +5,7 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 module.exports = {
 	entry: "./src/index.tsx",
 	output: {
-		path: path.resolve(__dirname, "dist"),
-		filename: "[name].[contenthash].js"
+		path: path.resolve(__dirname, "dist")
 	},
 	module: {
 		rules: [
@@ -26,23 +25,6 @@ module.exports = {
 			src: path.resolve(__dirname, "/src/")
 		},
 		extensions: [ ".ts", ".tsx", ".js", ".jsx" ]
-	},
-	devServer: {
-		contentBase: path.resolve(__dirname, "dist"),
-		compress: true,
-		port: 3000
-	},
-	optimization: {
-		runtimeChunk: "single",
-		splitChunks: {
-			cacheGroups: {
-				vendor: {
-					test: /node_modules/,
-					name: "vendors",
-					chunks: "all"
-				}
-			}
-		}
 	},
 	plugins: [
 		new CleanWebpackPlugin(),
