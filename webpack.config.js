@@ -1,5 +1,7 @@
 const path = require("path");
+const webpack = require("webpack");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 module.exports = {
 	entry: "./src/index.tsx",
@@ -26,11 +28,6 @@ module.exports = {
 		},
 		extensions: [ ".ts", ".tsx", ".js", ".jsx" ]
 	},
-	plugins: [
-		new HTMLWebpackPlugin({
-			template: "./src/assets/index.html"
-		})
-	],
 	devServer: {
 		contentBase: path.resolve(__dirname, "dist"),
 		compress: true,
@@ -47,5 +44,12 @@ module.exports = {
 				}
 			}
 		}
-	}
+	},
+	plugins: [
+		new webpack.ProgressPlugin(),
+		new CleanWebpackPlugin(),
+		new HTMLWebpackPlugin({
+			template: "./src/assets/index.html"
+		})
+	]
 };
