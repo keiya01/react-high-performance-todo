@@ -77,11 +77,8 @@ runtimeメインのコードから分けるために使用される。`single`�
   }
 ```
 
-### The Manifest [WIP]
-
 **参照**
 Cache - Webpack ... https://webpack.js.org/guides/caching/  
-The Manifest - Webpack ... https://webpack.js.org/concepts/manifest/  
 
 ### Size [WIP]  
 - webpackのbundle後のJavaScriptのサイズを減らしている話 - リクルート ... https://recruit-tech.co.jp/blog/2018/12/15/try_optimization_webpack_bundle_size/  
