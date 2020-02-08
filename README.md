@@ -44,24 +44,24 @@
 ## Code Splitting について  
 
 ### なぜコードを分割するのか
-コードを分割することで、初期表示を早くすることができる。ユーザーがアクセスした時に、ブラウザはHTML・CSS・JSを読み込みます。この時HTMLは最初に読み込まれ、styleがない状態で表示された後、CSSでスタイリングされ、JSが動き始めます。SPAのようなJSに頼り切ったサイトでは、JS(ReactやVue)はとてもサイズが大きいため、読み込みに時間がかかります。さらに、他にもpackageを使っていればさらに読み込みは遅くなります。そのためコードを分割して必要な時にファイルを読み込むようにすることで、初期表示を早くすることができる。  
+コードを分割することで、初期表示を早くすることができる。ユーザーがアクセスした時に、ブラウザはHTML・CSS・JSを読み込む。この時HTMLは最初に読み込まれ、styleがない状態で表示された後、CSSでスタイリングされ、JSが動き始める。SPAのようなJSに頼り切ったサイトでは、JS(ReactやVue)はとてもサイズが大きいため、読み込みに時間がかかる。さらに、他にもpackageを使っていればさらに読み込みは遅くなる。そのためコードを分割して必要な時にファイルを読み込むようにすることで、初期表示を早くすることができる。  
   
 **参考**  
 ちゃんと理解するCode Splitting - Qiita ... https://qiita.com/seya/items/06b160adb7801ae9e66f  
 
-### よくない方法
+### 分割の方法
 Webpackの機能を使ってコード分割を行う。一番簡単な方法として、`entry`に複数のファイルを書いて分割する方法を思いつくかもしれないが、この方法だと、`entry`ファイルのそれぞれにmoduleがバンドルされてしまう。例えば、`index.js`と`another.js`が存在し、`another.js`で`lodash`を使っているが、`index.js`では使っていない状況を考える。この場合、`webpack`を使って`build`すると、`index.js`と`another.js`の両方に`module`がバンドルされてしまう。こうなってしまうとコードを分割してもコード量が増えてしまい、逆にオーバーヘッドになってしまう。これを避けるには`SplitChunksPlugin`を使う必要がある。
 
 ### コードの重複を防ぐ
-コードの重複を防ぐには、`optimization.splitChunks.chunks`を`all`に設定する。
+コードの重複を防ぐには、`optimization.splitChunks.chunks`を`all`に設定する。しかし、`optimization.splitChunks.chunks`に直接`all`を指定すると、全てのファイルがコード分割されてしまうことで頻繁に内容が更新されることになり、キャッシュの恩恵を受けられないことがある([optimization.cacheGroups.vendor](#optimization.cacheGroups.vendor))。
 
 ### ダイナミックインポート
 ダイナミックインポートを使うことで、特定のファイルにbuild時の設定を組み込むことができたり、指定したmoduleを分割することができる。
 
 **参考**  
 Code Splitting - Webpack ... https://webpack.js.org/guides/code-splitting/  
-Code Splitting - React ... https://ja.reactjs.org/docs/code-splitting.html  
-Code Splitting - create-react-app ... https://create-react-app.dev/docs/code-splitting/  
+Code Splitting - React ... https://ja.reactjs.org/docs/code-splitting.html [未読]  
+Code Splitting - create-react-app ... https://create-react-app.dev/docs/code-splitting/ [未読]  
 
 ## Cache  
 
@@ -69,7 +69,8 @@ Code Splitting - create-react-app ... https://create-react-app.dev/docs/code-spl
 `webpack`で`output.filename`を`main.js`のように指定していると、ファイルの変更を検知できないため、キャッシュがうまく機能しない。
 ブラウザーは初期読み込み時に静的ファイルをキャッシュに保存するが、その時にファイル名を見て更新されたかどうかを判断している。そのため、ファイル名が変更されていないとファイルを更新しても、表示が変わらないということがよくある。そのため`webpack`では`[name].[contenthash].js`のようにすることで、ファイルの変更のたびにファイル名が変更されるように設定できるようになっている。  
   
-参考: https://webpack.js.org/guides/caching/  
+**参考**  
+Caching - Webpack ... https://webpack.js.org/guides/caching/  
 
 ### strategy
 
@@ -100,8 +101,8 @@ runtimeメインのコードから分けるために使用される。`single`�
 Cache - Webpack ... https://webpack.js.org/guides/caching/  
 
 ## Bundle Size の調査
-webpackを使用した場合、JavaScriptがbundleされるために、1ファイルのサイズがとても大きくなってしまうことがある。そうなってしまうと、初期読み込みが遅くなってしまい、UXの低下をもたらす。この問題を解決するために有効な手段として使うのが[Performance Budgets](#Performance-Budgets)である。これを指標として、パフォーマンス改善を行っていく。
-webpackには `webpack-bundle-analyzer` という Bundle Size を可視化するためのツールがあり、それを使うとスムーズ。カーソルを当てると、フィルサイズなどが表示されるので一つずつ改善していく。改善の仕方は、なぜそのファイルが重いのか、どのような用途で使われているかを調査する。その後、別ライブラリーで置き換えたり、自前で実装したりして、改善していく。
+webpack を使用した場合、JavaScript が bundle されるために、1ファイルのサイズがとても大きくなってしまうことがある。そうなってしまうと、初期読み込みが遅くなってしまい、UX の低下をもたらす。この問題を解決するために有効な手段として使うのが [Performance Budgets](#Performance-Budgets) である。これを指標として、パフォーマンス改善を行っていく。
+webpack には `webpack-bundle-analyzer` という Bundle Size を可視化するためのツールがあり、それを使うとスムーズ。カーソルを当てると、フィルサイズなどが表示されるので一つずつ改善していく。改善の仕方は、なぜそのファイルが重いのか、どのような用途で使われているかを調査する。その後、別ライブラリーで置き換えたり、自前で実装したりして、改善していく。
 
 **参考**
 webpackのbundle後のJavaScriptのサイズを減らしている話 - リクルート ... https://recruit-tech.co.jp/blog/2018/12/15/try_optimization_webpack_bundle_size/  
@@ -109,19 +110,19 @@ webpackのbundle後のJavaScriptのサイズを減らしている話 - リクル
 # Performance
 
 ## クリティカルレンダリングパス
-- クリティカルレンダリングパスとは、HTML、CSS、 JavaScriptのバイトの受信から、これらをピクセルとしてレンダリングするために必要な処理までの中間段階で行われている内容を理解してパフォーマンスの最適化を行うこと
+- クリティカルレンダリングパスとは、HTML、CSS、 JavaScript のバイトの受信から、これらをピクセルとしてレンダリングするために必要な処理までの中間段階で行われている内容を理解してパフォーマンスの最適化を行うこと
 - クリティカルレンダリングパスの最適化は、現在のユーザー操作に関連するコンテンツ表示の優先順位付けを意味する
 
 ## パフォーマンスバジェット
 
 ### 方法
 バジェットには、Milestone・Quantity・Rulesの３つがある。  
-**Milestone** はページのローディングなど、開始から完了までどのくらいの時間経過したかを測る指標で、First Contentful Paint や Time To Interactive, Speed Index などがある。これらの指標はユーザー中心で考えられているかが重要である。一つの指標で判断してしまうのユーザーにとって価値のないものになる可能性があるからである。例えば、初期表示がすごく速いからと言ってUXが向上するわけではなく、JavaScriptのサイズが大きければ、読み込み時間が長くなり実行が遅れるため、ユーザーは操作できないのでそのサイトにマイナスのイメージを持つかもしれない。そのため、初期表示のみを指標にせず、様々な側面から見ることが重要である。また、読み込みだけではなく操作性などについても注目する必要がある。
-ユーザーが視覚的に得るフィードバックは4つある。**きちんと動作しているか**、**実用的か**、**使い勝手が良いか**、**快適か**である。これらを測るためにいくつかの指標がある。
-1. First Paint(FP), First Contentful Paint(FCP) ... FPはピクセルを表示するタイミングで、FCPはテキスト、画像、SVG、Canvasを表示するタイミングであり、**きちんと動作しているか**を測る指標となる。
-2. First Meaningful Paint(FMP) ... 最も重要となる部分が表示されるタイミングを示すもので、**実用的か**を測る指標となる。最も重要となる部分はヒーロー要素と呼ばれ、Youtubeの動画や天気アプリでは指定した地域の天気予報が当てはまる。このヒーロー要素の表示が速ければ他の要素が遅くても気にならない場合もある。
-3. long tasks api ... 50ms以上かかるタスクを問題のあるタスクと判断し、通知してくれるAPIで、**快適か**を示す指標となる。
-4. Time To Interactive ... アプリケーションが視覚的にレンダリングされて、ユーザー入力に確実に応答できるようになるタイミングの目印のことで、**使い勝手が良いか**を示す指標となる。メインスレッドがアイドル状態であることを示す。「ページを動作させるコンポーネントを作成するJavaScriptがまだ読み込まれていない」、「処理に時間のかかるタスクがメインスレッドを塞いでいる」といった場合に応答できない。
+**Milestone** はページのローディングなど、開始から完了までどのくらいの時間経過したかを測る指標で、First Contentful Paint や Time To Interactive, Speed Index などがある。これらの指標はユーザー中心で考えられているかが重要である。なぜなら一つの指標で判断してしまうとユーザーにとって価値のないものになる可能性があるからである。例えば、初期表示がすごく速いからと言って UX が向上するわけではなく、JavaScript のサイズが大きければ、読み込み時間が長くなり実行が遅れるため、JavaScript が読み込まれるまでユーザーはサイトを操作できないのでそのサイトにマイナスのイメージを持つかもしれない。そのため、初期表示のみを指標にせず、様々な側面から見ることが重要である。また、読み込みだけではなく操作性などについても注目する必要がある。
+ユーザーが視覚的に得るフィードバックは4つある。**きちんと動作しているか**、**実用的か**、**使い勝手が良いか**、**快適か** である。これらを測るためにいくつかの指標がある。
+1. First Paint(FP), First Contentful Paint(FCP) ... FPはピクセルを表示するタイミングで、FCP はテキスト、画像、SVG、Canvas を表示するタイミングであり、この指標が早くなることでユーザーはページが動いていることを確認できるため、**きちんと動作しているか** を測る指標となる。
+2. First Meaningful Paint(FMP) ... 最も重要となる部分が表示されるタイミングを示すもので、**実用的か** を測る指標となる。最も重要となる部分はヒーロー要素と呼ばれ、Youtube の動画や天気アプリでは指定した地域の天気予報が当てはまる。このヒーロー要素の表示が速ければ他の要素が遅くても気にならない場合もある。
+3. long tasks api ... 50ms以上かかるタスクを問題のあるタスクと判断し、通知してくれるAPIで、**快適か** を示す指標となる。
+4. Time To Interactive ... アプリケーションが視覚的にレンダリングされて、ユーザー入力に確実に応答できるようになるタイミングの目印のことで、**使い勝手が良いか** を示す指標となる。メインスレッドがアイドル状態であることを示す。「ページを動作させるコンポーネントを作成するJavaScriptがまだ読み込まれていない」、「処理に時間のかかるタスクがメインスレッドを塞いでいる」といった場合に応答できない。
 
 下記リンクを参考にした。ユーザーの端末でのパフォーマンスを計測するための具体的な方法も書いてある。  
 https://developers.google.com/web/fundamentals/performance/user-centric-performance-metrics#top_of_page  
@@ -149,27 +150,27 @@ https://developers.google.com/web/fundamentals/performance/user-centric-performa
 - アニメーションがスムーズに見えるのは１秒間に60回リフレッシュ(60fps)する時である
 - 60fpsを保つために全てのタスクは10ms以内に完了する必要がある
 - タスクを実行すると、JS -> Style(CSSがどの要素にマッチするか) -> Layout(幅や高さ、位置などを計算して適用。子のStyleにも影響する) -> Paint(色や影、線などの描画が行われる) -> Composite(要素の重なりを計算する) の順でレンダリングが実行される
-- Layoutが最も重い処理となり、次にPaintが重い。高頻度でStyleが変更される場合、Compositeで処理される`transform`と`opacity`に絞った方が良い。
-- [css trigger](https://csstriggers.com)を見ると、どの要素がどこで適用されるのかわかる
+- Layoutが最も重い処理となり、次にPaintが重い。高頻度でStyleが変更される場合、Compositeのみで処理される`transform`と`opacity`に絞った方が良い。
+- [css trigger](https://csstriggers.com) を見ると、どの要素がどこで適用されるのかわかる
 
 ### JavaScript パフォーマンス
 - タイミングの悪いスクリプトや長時間実行されるスクリプトはパフォーマンス低下の原因になる
-- フレームがずれて実行される可能性があるため`setTimeout`や`setInterval`を使用するのを避けて`requestAnimationFrame`を使用するようにする
+- フレームがずれて実行される可能性があるため `setTimeout` や `setInterval` を使用するのを避けて `requestAnimationFrame` を使用するようにする
 - スクロール操作のようなアニメーションでは、JavaScript の実行時間を 3～4 ミリ秒に抑えることが理想的
-- DOM操作を必要としない検索やソートなどのデータ操作またはトラバーサルといった長時間実行されるスクリプトは`Web Worker`に移動する
+- DOM操作を必要としない検索やソートなどのデータ操作またはトラバーサルといった長時間実行されるスクリプトは `Web Worker` に移動する
 - マイクロタスクを使用して、複数のフレームに渡ってDOMを変更する
-- Chrome DevToolsのTimelineとJavaScriptプロファイラを使用して、JavaScriptの影響を評価する
-- 細かい最適化として、**要素の offsetTop の要求は getBoundingClientRect() の計算よりも高速**というものもあるが、ゲームなどの高度な処理が必要でない限りこの最適化は拘らなくても良い(新規で作る場合は意識してもよさそう)
+- Chrome DevTools の Timeline と JavaScript プロファイラを使用して、JavaScript の影響を評価する
+- 細かい最適化として、**要素の offsetTop の要求は getBoundingClientRect() の計算よりも高速** というものなどがあるが、ゲームなどの高度な処理が必要でない限りこの最適化は拘らなくても良い(新規で作る場合は意識してもよさそう)
 
 ### CSS パフォーマンス
 
 **参考**  
-レンダリング パフォーマンス - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rendering?hl=ja
+レンダリング パフォーマンス - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rendering?hl=ja [WIP]
 
 ## ローディングパフォーマンス
 
 **参考**  
-Loading Performance - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/get-started?hl=ja
+Loading Performance - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/get-started?hl=ja [WIP]
 
 ## RAILモデル
 RAILモデルはユーザーを中心に考えるパフォーマンスモデルである。全てのウェブアプリのライフサイクルには Response・ Animation・Idle・Load の4つの側面があり、これらに適したパフォーマンスはそれぞれ異なる。  
@@ -185,15 +186,15 @@ RAILモデルはユーザーを中心に考えるパフォーマンスモデル�
 - 10,000 ミリ秒以上 ... タスクを中断し、そのまま戻ってこない可能性がある
 - 500ミリ秒以上かかる場合はフィードバックを提供する必要
 
-**アニメーションやスクロールでは、10ミリ秒以内にフレームを生成します。**  
-- アニメーションは60fpsを目指す必要があるが、ブラウザが新しいフレームを画面に描画する必要があることを考えると、アニメーションをコードで実行できる時間は10ミリ秒程度であるため、必要最小限の処理に留める必要がある。
-- 負荷の高い処理を100ミリ秒に収まるように事前に実行しておき、60fpsに収まるように工夫するのも良い
+**アニメーションやスクロールでは、10 ミリ秒以内にフレームを生成します。**  
+- アニメーションは 60fps を目指す必要があるが、ブラウザが新しいフレームを画面に描画する必要があることを考えると、アニメーションをコードで実行できる時間は 10 ミリ秒程度であるため、必要最小限の処理に留める必要がある。
+- 負荷の高い処理を 100 ミリ秒に収まるように事前に実行しておき、60fpsに収まるように工夫するのも良い
 
 **メインスレッドのアイドル時間を最大限に活用します。**  
 - データのプリロードを最小限に抑えて、アプリの読み込みを高速にし、残っているデータはアイドル時間に読み込むようにする
-- 遅延している作業は50ミリ秒程度のブロックにグループ化する
+- 遅延している作業は 50 ミリ秒程度のブロックにグループ化する
 - ユーザーが操作を始めた場合はレスポンスを返すことを優先する
-- 100ミリ秒以内にレスポンスを返すためには、アプリで毎回50ミリ秒以内にメインスレッドに制御を返す必要がある
+- 100 ミリ秒以内にレスポンスを返すためには、アプリで毎回 50 ミリ秒以内にメインスレッドに制御を返す必要がある
 
 **ユーザーの作業を妨げません。インタラクティブ コンテンツは1000ミリ秒以内に提供します**
 - サイトは1秒以内に読み込まれたと感じられなければ、ユーザーの集中力がきれ、タスクの操作に失敗したと感じる
