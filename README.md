@@ -57,7 +57,6 @@ Code Splitting - Webpack ... https://webpack.js.org/guides/code-splitting/
 Code Splitting - React ... https://ja.reactjs.org/docs/code-splitting.html  
 Code Splitting - create-react-app ... https://create-react-app.dev/docs/code-splitting/  
 
-
 ## Cache  
 
 ### ブラウザ Cache について  
@@ -82,7 +81,7 @@ runtimeメインのコードから分けるために使用される。`single`�
       "runtimeChunk": "single",
       "cacheGroup": {
         "vendor": {
-          "test": /[\\/]node_modules[\\/]/,
+          "test": /node_modules/,
           "name": "vendors",
           "chunks": "all"
         }
