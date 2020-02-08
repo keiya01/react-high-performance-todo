@@ -106,6 +106,37 @@ webpackには `webpack-bundle-analyzer` という Bundle Size を可視化する
 - クリティカルレンダリングパスとは、HTML、CSS、 JavaScriptのバイトの受信から、これらをピクセルとしてレンダリングするために必要な処理までの中間段階で行われている内容を理解してパフォーマンスの最適化を行うこと
 - クリティカルレンダリングパスの最適化は、現在のユーザー操作に関連するコンテンツ表示の優先順位付けを意味する
 
+## パフォーマンスバジェット
+
+### 方法
+バジェットには、Milestone・Quantity・Rulesの３つがある。  
+**Milestone** はページのローディングなど、開始から完了までどのくらいの時間経過したかを測る指標で、First Contentful Paint や Time To Interactive, Speed Index などがある。これらの指標はユーザー中心で考えられているかが重要である。一つの指標で判断してしまうのユーザーにとって価値のないものになる可能性があるからである。例えば、初期表示がすごく速いからと言ってUXが向上するわけではなく、JavaScriptのサイズが大きければ、読み込み時間が長くなり実行が遅れるため、ユーザーは操作できないのでそのサイトにマイナスのイメージを持つかもしれない。そのため、初期表示のみを指標にせず、様々な側面から見ることが重要である。また、読み込みだけではなく操作性などについても注目する必要がある。
+ユーザーが視覚的に得るフィードバックは4つある。**きちんと動作しているか**、**実用的か**、**使い勝手が良いか**、**快適か**である。これらを測るためにいくつかの指標がある。
+- 1. First Paint(FP), First Contentful Paint(FCP) ... FPはピクセルを表示するタイミングで、FCPはテキスト、画像、SVG、Canvasを表示するタイミングであり、**きちんと動作しているか**を測る指標となる。
+- 2. First Meaningful Paint(FMP) ... 最も重要となる部分が表示されるタイミングを示すもので、**実用的か**を測る指標となる。最も重要となる部分はヒーロー要素と呼ばれ、Youtubeの動画や天気アプリでは指定した地域の天気予報が当てはまる。このヒーロー要素の表示が速ければ他の要素が遅くても気にならない場合もある。
+- 3. long tasks api ... 50ms以上かかるタスクを問題のあるタスクと判断し、通知してくれるAPIで、**快適か**を示す指標となる。
+- 4. Time To Interactive ... アプリケーションが視覚的にレンダリングされて、ユーザー入力に確実に応答できるようになるタイミングの目印のことで、**使い勝手が良いか**を示す指標となる。メインスレッドがアイドル状態であることを示す。「ページを動作させるコンポーネントを作成するJavaScriptがまだ読み込まれていない」、「処理に時間のかかるタスクがメインスレッドを塞いでいる」といった場合に応答できない。
+
+下記リンクを参考にした。ユーザーの端末でのパフォーマンスを計測するための具体的な方法も書いてある。  
+https://developers.google.com/web/fundamentals/performance/user-centric-performance-metrics#top_of_page  
+
+**Quantity** はアセットや通信量などの量を基準にした指標で、JavaScript のファイルサイズや HTTP リクエストの数、クリティカルレンダリングパスの数といった値の上限をバジェットとして設定する。
+
+**Rules** は[PageSpeed Insights](https://developers.google.com/speed/pagespeed/insights/) や [Lighthouse](https://developers.google.com/web/tools/lighthouse/)、もしくは [WebPageTest](https://www.webpagetest.org/) などのパフォーマンス測定ツールで算出されたスコア。
+
+### なぜ必要なのか
+上記のメトリクスをパフォーマンスバジェットに設定しているサービスには、Pinterest がある。JavaScript のファイルサイズを 200 KB に抑えた上で 3G 環境で Time to Interactive を 6 秒以内に短縮し、収益が 44% 向上させた。また、Tinder はメインとなる JS ファイルを 160 KB に、非同期で読み込む JS の chunk ファイルを 50 KB に抑えるようにバジェットを設定したうえで、Time to Interactive を Pinterest と同じく 6 秒以内に短縮することで、ネイティブアプリよりもユーザーがより多くのスワイプをするという結果に繋げた。
+モバイルサイトの速度とビジネス指標には相関関係があり、1 秒表示速度が改善されると、コンバージョン率が 27 % 改善されるというデータも存在する。(https://developers-jp.googleblog.com/2019/03/blog-post_15.html?m=1)以上の理由からパフォーマンスバジェットを設定して日頃からパフォーマンスを定量的に意識することが重要である。
+
+### ツール
+- [Lighthouse Bot](https://github.com/GoogleChromeLabs/lighthousebot)はGitHubのプルリクエスト単位で、Lighthouseを実行、パフォーマンスやベストプラクティス、PWAといったLighthouseの各スコアをパスした場合のみマージすることができるように制限することができる。
+- [bundlesize](https://github.com/siddharthkp/bundlesize)はアプリケーションのアセットファイルサイズをチェックするツールで、JavaScriptやアセットのサイズを制限したい時に便利
+- [SpeedCurve](https://speedcurve.com/)は Speed Index や First Contentful Paint といったマイルストーンベースのメトリクスや、JavaScript のファイルサイズ、HTTP リクエストの数といった量ベースのメトリクス、さらには Lighthouse を使った計測も行うためルールベースのメトリクスもバジェットとして設定可能。また、バジェットを超過した際に Slack への通知といった機能も持っている。
+その他にも、PageSpeed Insights API や WebpageTest を使って取得したデータを Google Sheets に記録、Google データポータル（旧データスタジオ）と連携して可視化するといった方法でもバジェットの運用を行うことができる。
+
+**参考**  
+パフォーマンスバジェット - Google Web Fundamentals ... https://developers-jp.googleblog.com/2019/03/blog-post_15.html
+
 ## レンダリング
 - アニメーションがスムーズに見えるのは１秒間に60回リフレッシュ(60fps)する時である
 - 60fpsを保つために全てのタスクは10ms以内に完了する必要がある
