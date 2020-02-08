@@ -15,8 +15,15 @@
     - [Bundle Size の調査](#Bundle-Size-の調査)
 - [Performance](#Performance)
   - [クリティカルレンダリングパス](#クリティカルレンダリングパス)
+  - [パフォーマンスバジェット](#パフォーマンスバジェット)
+    - [方法](#方法)
+    - [なぜ必要なのか](#なぜ必要なのか)
+    - [ツール](#ツール)
   - [レンダリング](#レンダリング)
-  - [JavaScript パフォーマンス](#JavaScript-パフォーマンス)
+    - [仕組み](#仕組み)
+    - [JavaScript パフォーマンス](#JavaScript-パフォーマンス)
+    - [CSS パフォーマンス](#CSS-パフォーマンス)
+  - [ローディングパフォーマンス](#ローディングパフォーマンス)
   - [RAILモデル](#RAILモデル)
 - [React](#React)
   - [React Performance](#React-Performance)
@@ -24,7 +31,6 @@
     - [コンポーネントを細かく分ける](#コンポーネントを細かく分ける)
     - [パフォーマンスの測定](#パフォーマンスの測定)
 - [App Shell](#App-Shell)
-- [Web Performance](#Web-Performance)
 - [Service Worker](#Service-Worker)
 
 # About  
@@ -98,7 +104,7 @@ webpackを使用した場合、JavaScriptがbundleされるために、1ファ�
 webpackには `webpack-bundle-analyzer` という Bundle Size を可視化するためのツールがあり、それを使うとスムーズ。カーソルを当てると、フィルサイズなどが表示されるので一つずつ改善していく。改善の仕方は、なぜそのファイルが重いのか、どのような用途で使われているかを調査する。その後、別ライブラリーで置き換えたり、自前で実装したりして、改善していく。
 
 **参考**
-- webpackのbundle後のJavaScriptのサイズを減らしている話 - リクルート ... https://recruit-tech.co.jp/blog/2018/12/15/try_optimization_webpack_bundle_size/  
+webpackのbundle後のJavaScriptのサイズを減らしている話 - リクルート ... https://recruit-tech.co.jp/blog/2018/12/15/try_optimization_webpack_bundle_size/  
 
 # Performance
 
@@ -138,17 +144,15 @@ https://developers.google.com/web/fundamentals/performance/user-centric-performa
 パフォーマンスバジェット - Google Web Fundamentals ... https://developers-jp.googleblog.com/2019/03/blog-post_15.html
 
 ## レンダリング
+
+### 仕組み
 - アニメーションがスムーズに見えるのは１秒間に60回リフレッシュ(60fps)する時である
 - 60fpsを保つために全てのタスクは10ms以内に完了する必要がある
 - タスクを実行すると、JS -> Style(CSSがどの要素にマッチするか) -> Layout(幅や高さ、位置などを計算して適用。子のStyleにも影響する) -> Paint(色や影、線などの描画が行われる) -> Composite(要素の重なりを計算する) の順でレンダリングが実行される
 - Layoutが最も重い処理となり、次にPaintが重い。高頻度でStyleが変更される場合、Compositeで処理される`transform`と`opacity`に絞った方が良い。
 - [css trigger](https://csstriggers.com)を見ると、どの要素がどこで適用されるのかわかる
 
-**参考**  
-- レンダリング パフォーマンス - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rendering?hl=ja
-- コンポジット - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rendering/stick-to-compositor-only-properties-and-manage-layer-count?hl=ja
-
-## JavaScript パフォーマンス
+### JavaScript パフォーマンス
 - タイミングの悪いスクリプトや長時間実行されるスクリプトはパフォーマンス低下の原因になる
 - フレームがずれて実行される可能性があるため`setTimeout`や`setInterval`を使用するのを避けて`requestAnimationFrame`を使用するようにする
 - スクロール操作のようなアニメーションでは、JavaScript の実行時間を 3～4 ミリ秒に抑えることが理想的
@@ -157,8 +161,15 @@ https://developers.google.com/web/fundamentals/performance/user-centric-performa
 - Chrome DevToolsのTimelineとJavaScriptプロファイラを使用して、JavaScriptの影響を評価する
 - 細かい最適化として、**要素の offsetTop の要求は getBoundingClientRect() の計算よりも高速**というものもあるが、ゲームなどの高度な処理が必要でない限りこの最適化は拘らなくても良い(新規で作る場合は意識してもよさそう)
 
+### CSS パフォーマンス
+
 **参考**  
-- JavaScript 実行の最適化 - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rendering/optimize-javascript-execution?hl=ja
+レンダリング パフォーマンス - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rendering?hl=ja
+
+## ローディングパフォーマンス
+
+**参考**  
+Loading Performance - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/get-started?hl=ja
 
 ## RAILモデル
 RAILモデルはユーザーを中心に考えるパフォーマンスモデルである。全てのウェブアプリのライフサイクルには Response・ Animation・Idle・Load の4つの側面があり、これらに適したパフォーマンスはそれぞれ異なる。  
@@ -189,9 +200,7 @@ RAILモデルはユーザーを中心に考えるパフォーマンスモデル�
 - 読み込みが終わったと感じられれば良いため、優先度順に読み込み、レスポンスを返せば良い
 
 **参考**  
-- RAIL モデルでパフォーマンスを測定する - Google Web Fundamentals... https://developers.google.com/web/fundamentals/performance/rail?hl=ja
-
-## Performance Budgets [WIP]
+RAIL モデルでパフォーマンスを計測する - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rail?hl=ja
 
 # React [WIP]  
 
@@ -214,19 +223,13 @@ Reactでは再レンダリングを抑制するための手段が各コンポー
 - @welldone-software/why-did-you-render ... 再レンダリングしている箇所とその理由、無駄に再生成されているデータを教えてくれる
 
 **参考**  
-- パフォーマンス最適化 - React ... https://ja.reactjs.org/docs/optimizing-performance.html
-- お前らのReactは遅い - Qiita ... https://qiita.com/teradonburi/items/5b8f79d26e1b319ac44f
-- React製のSPAのパフォーマンスチューニング実例 - リクルート ... https://recruit-tech.co.jp/blog/2018/09/19/react_spa_performance_tuning/  
+パフォーマンス最適化 - React ... https://ja.reactjs.org/docs/optimizing-performance.html  
+お前らのReactは遅い - Qiita ... https://qiita.com/teradonburi/items/5b8f79d26e1b319ac44f  
+React製のSPAのパフォーマンスチューニング実例 - リクルート ... https://recruit-tech.co.jp/blog/2018/09/19/react_spa_performance_tuning/  
 
 # App Shell [WIP]  
-- App Shell モデル - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/architecture/app-shell?hl=ja
-- Next.js ... https://nextjs.org/docs/getting-started
-
-# Web Performance [WIP]  
-- パフォーマンスが重要なのはなぜか - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/why-performance-matters?hl=ja
-- RAIL モデルでパフォーマンスを計測する - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rail?hl=ja
-- Loading Performance - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/get-started?hl=ja
-- レンダリング パフォーマンス - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rendering?hl=ja  
+App Shell モデル - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/architecture/app-shell?hl=ja  
+Next.js ... https://nextjs.org/docs/getting-started  
 
 # Service Worker [WIP]  
-- Service Worker について - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/primers/service-workers?hl=ja  
+Service Worker について - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/primers/service-workers?hl=ja  
