@@ -76,7 +76,7 @@ Caching - Webpack ... https://webpack.js.org/guides/caching/
 
 #### optimization.runtimeChunk
 
-runtimeメインのコードから分けるために使用される。`single`を設定すると、runtimeが一つのfileにまとめられる。  
+runtimeをメインのコードから分けるために使用される。`single`を設定すると、runtimeが一つのfileにまとめられる。  
 
 #### optimization.cacheGroups.vendor
 
@@ -97,7 +97,7 @@ runtimeメインのコードから分けるために使用される。`single`�
   }
 ```
 
-**参照**
+**参照**  
 Cache - Webpack ... https://webpack.js.org/guides/caching/  
 
 ## Bundle Size の調査
@@ -133,9 +133,9 @@ https://developers.google.com/web/fundamentals/performance/user-centric-performa
 
 ### なぜ必要なのか
 上記のメトリクスをパフォーマンスバジェットに設定しているサービスには、Pinterest がある。JavaScript のファイルサイズを 200 KB に抑えた上で 3G 環境で Time to Interactive を 6 秒以内に短縮し、収益が 44% 向上させた。また、Tinder はメインとなる JS ファイルを 160 KB に、非同期で読み込む JS の chunk ファイルを 50 KB に抑えるようにバジェットを設定したうえで、Time to Interactive を Pinterest と同じく 6 秒以内に短縮することで、ネイティブアプリよりもユーザーがより多くのスワイプをするという結果に繋げた。
-モバイルサイトの速度とビジネス指標には相関関係があり、1 秒表示速度が改善されると、コンバージョン率が 27 % 改善されるというデータも存在する。(https://developers-jp.googleblog.com/2019/03/blog-post_15.html?m=1)以上の理由からパフォーマンスバジェットを設定して日頃からパフォーマンスを定量的に意識することが重要である。
+モバイルサイトの速度とビジネス指標には相関関係があり、1 秒表示速度が改善されると、コンバージョン率が 27 % 改善されるというデータも存在する( https://developers-jp.googleblog.com/2019/03/blog-post_15.html?m=1/ )。以上の理由からパフォーマンスバジェットを設定して日頃からパフォーマンスを定量的に意識することが重要である。
 
-### ツール
+### CIなどの監視ツール
 - [Lighthouse Bot](https://github.com/GoogleChromeLabs/lighthousebot)はGitHubのプルリクエスト単位で、Lighthouseを実行、パフォーマンスやベストプラクティス、PWAといったLighthouseの各スコアをパスした場合のみマージすることができるように制限することができる。
 - [bundlesize](https://github.com/siddharthkp/bundlesize)はアプリケーションのアセットファイルサイズをチェックするツールで、JavaScriptやアセットのサイズを制限したい時に便利
 - [SpeedCurve](https://speedcurve.com/)は Speed Index や First Contentful Paint といったマイルストーンベースのメトリクスや、JavaScript のファイルサイズ、HTTP リクエストの数といった量ベースのメトリクス、さらには Lighthouse を使った計測も行うためルールベースのメトリクスもバジェットとして設定可能。また、バジェットを超過した際に Slack への通知といった機能も持っている。
@@ -148,7 +148,7 @@ https://developers.google.com/web/fundamentals/performance/user-centric-performa
 
 ### 仕組み
 - アニメーションがスムーズに見えるのは１秒間に60回リフレッシュ(60fps)する時である
-- 60fpsを保つために全てのタスクは10ms以内に完了する必要がある
+- ブラウザ側でのレンダリング処理もあるため、60fpsを保つために全てのタスクは10ms以内に完了する必要がある
 - タスクを実行すると、JS -> Style(CSSがどの要素にマッチするか) -> Layout(幅や高さ、位置などを計算して適用。子のStyleにも影響する) -> Paint(色や影、線などの描画が行われる) -> Composite(要素の重なりを計算する) の順でレンダリングが実行される
 - Layoutが最も重い処理となり、次にPaintが重い。高頻度でStyleが変更される場合、Compositeのみで処理される`transform`と`opacity`に絞った方が良い。
 - [css trigger](https://csstriggers.com) を見ると、どの要素がどこで適用されるのかわかる
