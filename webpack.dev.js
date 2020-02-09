@@ -7,6 +7,7 @@ module.exports = merge(common, {
 	output: {
 		filename: "[name].bundle.js"
 	},
+	devtool: "inline-source-map",
 	devServer: {
 		contentBase: path.resolve(__dirname, "dist"),
 		compress: true,
