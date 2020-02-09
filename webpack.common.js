@@ -29,7 +29,7 @@ module.exports = {
 	plugins: [
 		new CleanWebpackPlugin(),
 		new HTMLWebpackPlugin({
-			template: "./src/assets/index.html"
+			template: "./public/index.html"
 		})
 	]
 };
