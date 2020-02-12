@@ -165,13 +165,36 @@ https://developers.google.com/web/fundamentals/performance/user-centric-performa
 - スクロール操作のようなアニメーションでは、JavaScript の実行時間を 3～4 ミリ秒に抑えることが理想的
 - DOM操作を必要としない検索やソートなどのデータ操作またはトラバーサルといった長時間実行されるスクリプトは `Web Worker` に移動する
 - マイクロタスクを使用して、複数のフレームに渡ってDOMを変更する
-- Chrome DevTools の Timeline と JavaScript プロファイラを使用して、JavaScript の影響を評価する
+- Chrome DevTools の Performance で Scripting の時間を計測し、JavaScript の影響を評価する
+- `preventDefault`の有無を知らせるために、`addEventListener`の第3引数には`{passive: true}`を指定する。これにより、ブラウザが`preventDefault`が発生した時の準備をする必要がなくなり、処理が軽くなる
+- scroll イベントのような長時間実行されるようなイベントの場合、アニメーションがスムーズに動かない時がある。その時は、`requestAnimationFrame`を使って正しいタイミングのフレームで実行するようにスケジュールすれば、スムーズに動くようになる
+  - 特にスクロールイベント中に要素の位置やサイズを取得してからからスタイルに変更を加えているような処理を実装している場合、スクロールイベントで要素の正しい位置やサイズを取得するためにレイアウト処理の後にスケジュールされるため、アニメーションが正しく動作しない可能性がある。このような場合、上記の対応が必要である
 - 細かい最適化として、**要素の offsetTop の要求は getBoundingClientRect() の計算よりも高速** というものなどがあるが、ゲームなどの高度な処理が必要でない限りこの最適化は拘らなくても良い(新規で作る場合は意識してもよさそう)
 
 ### CSS パフォーマンス
 
+#### Layout
+- :nth-last-child(-n+1)のような処理は一致する要素を探すために全ての要素を確認する必要があるため固有のclass名をつけたほうが良い
+- dev tools の timeline タブを使うことでstyle計算の処理時間を見ることができる
+- float よりも flexbox の方が高速
+- レイアウト処理(width, height, z-index, position, etc...)を変更するとドキュメント全体に適用され、計算量が多くなるため出来るだけ変更するのを避ける
+- ある要素からレイアウトを参照しようとする時(offsetHeightなど)に、レイアウトの変更を行ってから参照しようとすると、ブラウザは正しい結果を返すために変更されたレイアウトを計算してから結果を参照できるようにするため、参照が遅れる。そのためレイアウトを参照してから変更するようにしたほうが良い
+
+#### Paint
+- 文字色・背景色・影などの Paint 処理で行われるプロパティーの変更はとても重い処理になるため、避ける
+- DevTools を開いて、`esc` key を押して、 Rendering タブの Show paint rectangles を使うと Paint 処理がどこで行われているか見ることができる
+- Performance タブで paint を計測することで、処理時間を確認することができる
+- `will-change`や`transfrom: translateZ(0)`を使うことでコンポジ層を作成することができ、コンポジ層を作成することで、他の要素に影響を与えることなく、styleを変更することができるが、メモリーの管理が必要となるため、不必要に使ってはいけない。使う時には、使う前のパフォーマンスと使った後のパフォーマンスをしっかり計測した上で、メリットがある場合のみ使用すべきである。
+
+#### アニメーション
+- 基本的に要素に変化をつける場合、`transform`と`opacity`を使うようにする
+- 上記以外のアニメーションを行いたい場合、 [FLIP](https://aerotwist.com/blog/flip-your-animations/) を参照すると良い
+- より複雑な処理の場合、`will-change`を使うこともできるが多用することでユーザーのGPUを過剰に使用することになり、パフォーマンスが逆に落ちてしまう可能性もある
+- DevTools の バブルボタンをクリックして、more tools を押すと、layer というアイテムがあり、そこから現在のレイヤーの数や動きを見ることができる
+
 **参考**  
-レンダリング パフォーマンス - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rendering?hl=ja [WIP]
+レンダリング パフォーマンス - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rendering?hl=ja  
+猫でもわかるスクロールイベントパフォーマンス改善ポイント2018 - Qiita ... https://qiita.com/kikuchi_hiroyuki/items/7ac41f58891d96951fa1#requestanimationframe  
 
 ## ローディングパフォーマンス
 
