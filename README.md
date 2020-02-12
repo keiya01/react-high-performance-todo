@@ -225,7 +225,7 @@ https://developers.google.com/web/fundamentals/performance/user-centric-performa
 レンダリング パフォーマンス - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rendering?hl=ja  
 猫でもわかるスクロールイベントパフォーマンス改善ポイント2018 - Qiita ... https://qiita.com/kikuchi_hiroyuki/items/7ac41f58891d96951fa1#requestanimationframe  
 
-## ローディングパフォーマンス
+## ローディングパフォーマンス [WIP]
 
 **参考**  
 Loading Performance - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/get-started?hl=ja [WIP]
