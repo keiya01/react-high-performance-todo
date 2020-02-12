@@ -47,10 +47,10 @@
 ## Code Splitting について  
 
 ### なぜコードを分割するのか
-コードを分割することで、初期表示を早くすることができる。ユーザーがアクセスした時に、ブラウザはHTML・CSS・JSを読み込む。この時HTMLは最初に読み込まれ、styleがない状態で表示された後、CSSでスタイリングされ、JSが動き始める。SPAのようなJSに頼り切ったサイトでは、JS(ReactやVue)はとてもサイズが大きいため、読み込みに時間がかかる。さらに、他にもpackageを使っていればさらに読み込みは遅くなる。そのためコードを分割して必要な時にファイルを読み込むようにすることで、初期表示を早くすることができる。  
-  
+> コード分割は、ユーザが必要とするコードだけを「遅延読み込み」する手助けとなり、 アプリのパフォーマンスを劇的に向上させることができます。 アプリの全体的なコード量を減らすことはできませんが、ユーザが必要としないコードを読み込まなくて済むため、 初期ロードの際に読む込むコード量を削減できます。 
+
 **参考**  
-ちゃんと理解するCode Splitting - Qiita ... https://qiita.com/seya/items/06b160adb7801ae9e66f  
+Code Splitting - React ... https://ja.reactjs.org/docs/code-splitting.html
 
 ### 分割の方法
 Webpackの機能を使ってコード分割を行う。一番簡単な方法として、`entry`に複数のファイルを書いて分割する方法を思いつくかもしれないが、この方法だと、`entry`ファイルのそれぞれにmoduleがバンドルされてしまう。例えば、`index.js`と`another.js`が存在し、`another.js`で`lodash`を使っているが、`index.js`では使っていない状況を考える。この場合、`webpack`を使って`build`すると、`index.js`と`another.js`の両方に`module`がバンドルされてしまう。こうなってしまうとコードを分割してもコード量が増えてしまい、逆にオーバーヘッドになってしまう。これを避けるには`SplitChunksPlugin`を使う必要がある。
@@ -59,15 +59,44 @@ Webpackの機能を使ってコード分割を行う。一番簡単な方法と�
 コードの重複を防ぐには、`optimization.splitChunks.chunks`を`all`に設定する。しかし、`optimization.splitChunks.chunks`に直接`all`を指定すると、全てのファイルがコード分割されてしまうことで頻繁に内容が更新されることになり、キャッシュの恩恵を受けられないことがある([optimization.cacheGroups.vendor](#optimization.cacheGroups.vendor))。
 
 ### ダイナミックインポート
-ダイナミックインポートを使うことで、特定のファイルにbuild時の設定を組み込むことができたり、指定したmoduleを分割することができる。
+ダイナミックインポート(`import()`)を使うことで、特定のファイルにbuild時の設定を組み込むことができたり、指定したmoduleを分割することができる。また、Reactを使っている時は、`lazy()`と`Suspense`コンポーネントを使うことで、コードを分割できる。SSRを使用している場合は [loadable-component](https://loadable-components.com/) を使うとコード分割を利用できる。  
+`babel` を使用している場合は、[babel-plugin-syntax-dynamic-import](https://classic.yarnpkg.com/en/package/babel-plugin-syntax-dynamic-import) を使用しないと、`import()`が変換されてしまう可能性があるため、指定しておく。
 
-### Minify
-Reactでは Production Mode でビルドすることで、自動的にminifyしてくれる(webpack v4 以降)
+### Reactにおけるコード分割
+- [React.lazy](https://ja.reactjs.org/docs/code-splitting.html#reactlazy) を使用して、Dynamic Import を行い、コードを分割する
+  - `React.lazy` は `default export` のみサポートしているため、名前付きエクスポートを使用している場合は、中間モジュールを作成して `export { MyComponent as default } from "./ManyComponents.js";` のようにデフォルトとして、再エクスポートするように実装する。
+- [React.Suspense](https://ja.reactjs.org/docs/code-splitting.html#suspense) を使用して、Dynamic Import を非同期で読み込む
+- [Error-Boundary](https://ja.reactjs.org/docs/error-boundaries.html) を使用して、読み込み時に発生したエラーをキャッチする
+- ルーティング単位でコードを分割する時は、以下のようにする
+
+```jsx
+
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import React, { Suspense, lazy } from 'react';
+
+const Home = lazy(() => import('./routes/Home'));
+const About = lazy(() => import('./routes/About'));
+
+const App = () => (
+  <Router>
+    <Suspense fallback={<div>Loading...</div>}>
+      <Switch>
+        <Route exact path="/" component={Home}/>
+        <Route path="/about" component={About}/>
+      </Switch>
+    </Suspense>
+  </Router>
+);
+
+```
 
 **参考**  
 Code Splitting - Webpack ... https://webpack.js.org/guides/code-splitting/  
-Code Splitting - React ... https://ja.reactjs.org/docs/code-splitting.html [未読]  
-Code Splitting - create-react-app ... https://create-react-app.dev/docs/code-splitting/ [未読]  
+Code Splitting - React ... https://ja.reactjs.org/docs/code-splitting.html
+Code Splitting - create-react-app ... https://create-react-app.dev/docs/code-splitting/
+
+## Minify
+Reactでは Production Mode でビルドすることで、自動的にminifyしてくれる(webpack v4 以降)
 
 ## Cache  
 
