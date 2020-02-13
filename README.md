@@ -25,6 +25,8 @@
     - [CSS パフォーマンス](#CSS-パフォーマンス)
   - [ローディングパフォーマンス](#ローディングパフォーマンス)
   - [RAILモデル](#RAILモデル)
+- [App Shell](#App-Shell)
+- [Service Worker](#Service-Worker)
 - [React](#React)
   - [React Performance](#React-Performance)
     - [re-render](#re-render)
@@ -33,8 +35,6 @@
     - [List](#List)
     - [コンポーネントを細かく分ける](#コンポーネントを細かく分ける)
     - [パフォーマンスの測定](#パフォーマンスの測定)
-- [App Shell](#App-Shell)
-- [Service Worker](#Service-Worker)
 
 # About  
 - React または SPA 開発に役立つ Webpack の設定や、Performance 改善の方法を調べた
@@ -261,6 +261,24 @@ RAILモデルはユーザーを中心に考えるパフォーマンスモデル�
 **参考**  
 RAIL モデルでパフォーマンスを計測する - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rail?hl=ja
 
+# App Shell 
+App Shell とはネイティブのように瞬時に、そして確実にユーザーの画面に読み込める Progressive Web App(PWA) を構築するための方法の1つである。Shell とは CSS・HTML・JavaScript のことで、キャッシュしておくことで、瞬時に高いパフォーマンスを発揮できる仕組みのこと。
+JavaScript を多用したアーキテクチャーのシングルページアプリケーションに対しては App Shell が有力なプローチとなる。Service Worker を使用して積極的に Shell をキャッシュして、次に JavaScript を使用して各ページの動的コンテンツを読み込む。App Shell は最初の HTML コンテンツを高速で画面に表示するのに役立つ。また、App Shell は UIの骨組みであり、データを含まない。  
+App Shell には以下の要件が求められる。
+
+- 瞬時の読み込み
+- 最小限のデータ使用量
+- ローカルのキャッシュから静的アセットを使用
+- コンテンツとナビゲーションの分離
+- ページ固有のコンテンツと表示(HTML, JSON など)
+- 必要に応じた動的コンテンツのキャッシュ
+
+App Shell モデル - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/architecture/app-shell?hl=ja  
+Next.js ... https://nextjs.org/docs/getting-started  
+
+# Service Worker [WIP]  
+Service Worker について - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/primers/service-workers?hl=ja  
+
 # React [WIP]  
 
 ## React Performance  
@@ -308,9 +326,4 @@ Reactでは再レンダリングを抑制するための手段が各コンポー
 本当は怖いReact.memo - Qiita https://qiita.com/suzuesa/items/1bb3b1493ff526814f03  
 React製のSPAのパフォーマンスチューニング実例 - リクルート ... https://recruit-tech.co.jp/blog/2018/09/19/react_spa_performance_tuning/  
 
-# App Shell [WIP]  
-App Shell モデル - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/architecture/app-shell?hl=ja  
-Next.js ... https://nextjs.org/docs/getting-started  
-
-# Service Worker [WIP]  
-Service Worker について - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/primers/service-workers?hl=ja  
+# Redux [WIP]
