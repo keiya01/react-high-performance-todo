@@ -7,6 +7,7 @@
     - [よくない方法](#よくない方法)
     - [コードの重複を防ぐ](#コードの重複を防ぐ)
     - [ダイナミックインポート](#ダイナミックインポート)
+  - [Minify](#Minify)
   - [Cache](#Cache)
     - [ブラウザ Cache について](#ブラウザ-Cache-について)
     - [strategy](#strategy)
@@ -25,6 +26,12 @@
     - [CSS パフォーマンス](#CSS-パフォーマンス)
   - [ローディングパフォーマンス](#ローディングパフォーマンス)
   - [RAILモデル](#RAILモデル)
+- [最適なレンダリング手法](#最適なレンダリング手法)
+  - [サーバーサイドレンダリング(SSR)](#サーバーサイドレンダリング(SSR))
+  - [静的レンダリング](#静的レンダリング)
+  - [クライアントサイドレンダリング(CSR)](#クライアントサイドレンダリング(CSR))
+  - [どれを使えば良いか](#どれを使えば良いか)
+- [PRPL][#PRPL]
 - [App Shell](#App-Shell)
 - [Service Worker](#Service-Worker)
 - [React](#React)
@@ -35,6 +42,9 @@
     - [List](#List)
     - [コンポーネントを細かく分ける](#コンポーネントを細かく分ける)
     - [パフォーマンスの測定](#パフォーマンスの測定)
+- [Redux](#Redux)
+- [SSR](#SSR)
+- [その他のツール](#その他のツール)
 
 # About  
 - React または SPA 開発に役立つ Webpack の設定や、Performance 改善の方法を調べた
@@ -94,6 +104,7 @@ const App = () => (
 Code Splitting - Webpack ... https://webpack.js.org/guides/code-splitting/  
 Code Splitting - React ... https://ja.reactjs.org/docs/code-splitting.html
 Code Splitting - create-react-app ... https://create-react-app.dev/docs/code-splitting/
+Reduce JavaScript Payloads with Code Splitting - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/optimizing-javascript/code-splitting/?hl=ja [未読]
 
 ## Minify
 Reactでは Production Mode でビルドすることで、自動的にminifyしてくれる(webpack v4 以降)
@@ -261,6 +272,35 @@ RAILモデルはユーザーを中心に考えるパフォーマンスモデル�
 **参考**  
 RAIL モデルでパフォーマンスを計測する - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rail?hl=ja
 
+
+# 最適なレンダリング手法 
+
+## サーバーサイドレンダリング(SSR)
+SSR はナビゲーションに応じたサーバー上のページのために、完全な HTML を生成する手法。この手法ではブラウザにレスポンスを返す前に、サーバー内で HTML を生成するため、データのフェッチとクライアント上で DOM を作成する作業が回避される。そのため SSR は、高速な FP(First Paint) と FCP(First Contentful Paint) を実現する。また、サーバー上でページのロジックとレンダリングを行うため、JavaScript をクライアントへ大量送信することを避けることができる。これにより、TTI(Time To Interactive) を短時間で達成できる。つまりサーバー上でレンダリングを行うため、クライアントで必要な JavaScript のサイズが少なくなり、初期表示が格段に早くなるのである。
+しかし、SSR には欠点もある。それは TTFB(Time To First Byte) が遅くなるのである。ユーザーがページを移動する時にサーバー上で新しく HTML をレンダリングするなどの処理を行うため、遷移後のページの表示が遅くなってしまう。この欠点は、CSR と SSR を組み合わせる(ハイブリットレンダリング)ことで解決できる。リクエストの多いページではSSRを使用し、それ以外の部分ではCSRを使用するように工夫することでそれぞれのメリットを生かしたレンダリングを行うことができる。
+また、SSR は正しく最適化しなければ初期表示が高速化するといったメリットの恩恵を受けることができないこともある。SSR は基本的には Node.js で行われるが JavaScript はシングルスレッドであるため多くのリクエストを捌く工夫や、キャッシュの有効活用、メモリ消費の管理、メモ化などの最適化が必要となる。
+SSR ではリハイドレーションという、サーバー側で生成された HTML と クライアント側のビューを同期させることで JavaScript と対話可能にするもので、これが行われることにより TTI が遅くなってしまうことがある。現在ではプログレッシブ リハイドレーションという手法を React などのフレームワークでも探っている状態で、これはハイドレーションを少しづつ行うことでメインスレッドを出来るだけアイドル状態にしておき、イベントとの対話を防がないようにするものである。
+
+## 静的レンダリング
+静的レンダリングはビルド時に行われ、最速の FP と FCP 、TTI を実現する。サーバーサイドレンダリングのように HTML をリクエストに応じて生成するのではなく、事前に HTML をビルドしているため一貫して最速の TTFB を達成することが可能である。通常、静的レンダリングは、各 URL に対応する個別の HTML ファイルを前もって作成しているため、HTML のリクエストが予め生成されているので、複数の CDN をデプロイし、エッジキャッシュを活用することができる。
+静的レンダリングの欠点は、すべての有効な URL に対し、個々に HTML ファイルを生成しなければならないことである。これらの URL が事前に、多くの固有ページを持つサイトであるか予測できない場合に実装が難しくなるため向かない。JavaScript を無効にしたときに、正しく動くページは静的レンダリングに向いていて、コンテンツが欠けてしまうようなページは静的レンダリングに向いていない。
+
+## クライアントサイドレンダリング(CSR)
+CSR は JavaScript を使用し、直接ブラウザでページをレンダリングする手法である。全てのロジック、データフェッチ、ルーティングはなどの処理はクライアントで行われる。CSR は JavaScript を取得・ロードしてからレンダリングされるため、初期表示を早くしたり、モバイルでの表示を高速にするのが難しい場合がある。しかし、JavaScript のバジェットを最小限に抑え、応答時間を早くすることができれば、SSR のパフォーマンスに近づくことができる。HTTP/2 サーバー通知や、`<link rel="preload">`を使うことでクリティカルなスクリプトとデータをすぐに配信することができる。[PRPL](#PRPL) のようなパターンは CSR で初期表示を早くするために有効な手法。
+CSR では規模が大きくなるにつれて、バンドルサイズが大きくなるため、必要な時だけ必要な処理を読み込むようにするために、積極的にコード分割を行う必要がある。また、App Shell モデルを取り入れて、キャッシュを有効活用することも重要である。
+
+## どれを使えば良いか
+- SSR ... FP や FCP などの初期表示を早くしたいサービスや大規模なサービスに向いている
+- 静的レンダリング ... ドキュメントなどの予め、構成が決まっていて、ルーティングが定まっているようなサイト
+- CSR ... 小 ~ 中規模のサービスでTTIやTTFBのようなイベントに対する反応を速くしたいようなサービス
+
+**参考**  
+Web上のレンダリング - Google Web Fundamentals ... https://developers.google.com/web/updates/2019/02/rendering-on-the-web?hl=ja  
+
+# PRPL [WIP]
+**参考**  
+Apply instant loading with the PRPL pattern - web.dev ... https://web.dev/apply-instant-loading-with-prpl/ [未読]  
+
 # App Shell 
 App Shell とはネイティブのように瞬時に、そして確実にユーザーの画面に読み込める Progressive Web App(PWA) を構築するための方法の1つである。Shell とは CSS・HTML・JavaScript のことで、キャッシュしておくことで、瞬時に高いパフォーマンスを発揮できる仕組みのこと。
 JavaScript を多用したアーキテクチャーのシングルページアプリケーションに対しては App Shell が有力なプローチとなる。Service Worker を使用して積極的に Shell をキャッシュして、次に JavaScript を使用して各ページの動的コンテンツを読み込む。App Shell は最初の HTML コンテンツを高速で画面に表示するのに役立つ。また、App Shell は UIの骨組みであり、データを含まない。  
@@ -327,3 +367,11 @@ Reactでは再レンダリングを抑制するための手段が各コンポー
 React製のSPAのパフォーマンスチューニング実例 - リクルート ... https://recruit-tech.co.jp/blog/2018/09/19/react_spa_performance_tuning/  
 
 # Redux [WIP]
+
+# SSR [WIP]
+**参考**  
+Speedier Server-Side Rendering in React 16 with Component Caching - medium ... https://medium.com/@reactcomponentcaching/speedier-server-side-rendering-in-react-16-with-component-caching-e8aa677929b1 [未読]  
+Hastening React SSR with component memoization and templatization - Speaker Deck ... https://speakerdeck.com/maxnajim/hastening-react-ssr-with-component-memoization-and-templatization [未読]  
+
+# その他のツール
+- モバイルフレンドリー テスト ... https://search.google.com/test/mobile-friendly?hl=ja
