@@ -4,7 +4,8 @@ const merge = require("webpack-merge");
 module.exports = merge(common, {
 	mode: "production",
 	output: {
-		filename: "[name].[contenthash].js"
+		filename: "[name].[contenthash].js",
+		chunkFilename: "[name].[contenthash].chunk.js"
 	},
 	optimization: {
 		runtimeChunk: "single",
@@ -16,6 +17,9 @@ module.exports = merge(common, {
 					chunks: "all"
 				}
 			}
+		},
+		runtimeChunk: {
+			name: "runtime"
 		}
 	}
 });
