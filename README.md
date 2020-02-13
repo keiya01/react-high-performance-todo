@@ -104,7 +104,6 @@ const App = () => (
 Code Splitting - Webpack ... https://webpack.js.org/guides/code-splitting/  
 Code Splitting - React ... https://ja.reactjs.org/docs/code-splitting.html
 Code Splitting - create-react-app ... https://create-react-app.dev/docs/code-splitting/
-Reduce JavaScript Payloads with Code Splitting - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/optimizing-javascript/code-splitting/?hl=ja [未読]
 
 ## Minify
 Reactでは Production Mode でビルドすることで、自動的にminifyしてくれる(webpack v4 以降)
