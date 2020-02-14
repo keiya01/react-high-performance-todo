@@ -25,6 +25,7 @@
     - [JavaScript パフォーマンス](#JavaScript-パフォーマンス)
     - [CSS パフォーマンス](#CSS-パフォーマンス)
   - [ローディングパフォーマンス](#ローディングパフォーマンス)
+  - [HTTP キャッシュ](#HTTP-キャッシュ)
   - [RAILモデル](#RAILモデル)
 - [最適なレンダリング手法](#最適なレンダリング手法)
   - [サーバーサイドレンダリング(SSR)](#サーバーサイドレンダリング(SSR))
@@ -41,6 +42,7 @@
   - [注意点](#注意点)
   - [開発](#開発)
   - [SWを監視する](#SWを監視する)
+  - [SWのパフォーマンス](#SWのパフォーマンス)
 - [React](#React)
   - [React Performance](#React-Performance)
     - [re-render](#re-render)
@@ -246,6 +248,11 @@ https://developers.google.com/web/fundamentals/performance/user-centric-performa
 
 **参考**  
 Loading Performance - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/get-started?hl=ja [WIP]
+
+## HTTP キャッシュ [WIP]
+
+**参考**  
+HTTP キャッシュ - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching?hl=ja  
 
 ## RAILモデル
 RAILモデルはユーザーを中心に考えるパフォーマンスモデルである。全てのウェブアプリのライフサイクルには Response・ Animation・Idle・Load の4つの側面があり、これらに適したパフォーマンスはそれぞれ異なる。  
@@ -547,6 +554,51 @@ navigator.serviceWorker.addEventListener('controllerchange', () => {
 
 ```
 
+## SWを登録する
+SW を登録する時によく見るボイラープレートは以下のようなものである。
+
+```js
+if ("serviceWorker" in navigator) {
+  naigator.serviceWorker.register("./service-worker.js");
+}
+```
+
+しかし、この書き方だと、帯域幅の狭くリソースの少ないモバイルでは SW のバックグラウンドでのインストールにより、インタラクティブなページのレンダリングが遅くなってしまう。
+この問題を解決するために、以下のように SW をインストールするタイミングを遅らせる必要がある。
+
+```js
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js');
+  });
+}
+
+```
+
+上記のようにWebアプリケーションが読み込まれたタイミングで SW を遅らせるのが一般的な問題へのアプローチであるが、ケースに合わせて読み込みのタイミングを変更する必要がある。
+
+> Google I/O 2016 ウェブアプリは、メイン画面に遷移する前に短いアニメーションを表示します。 Google のチームは、アニメーションの表示中に Service Worker 登録を開始すると、ローエンドのモバイル端末でアニメーションの品質が低下する場合があることを発見しました。 ブラウザが数秒間アイドル状態になる可能性が高い場合、ユーザーに不快感を与えないよう、アニメーションが終わるまで Service Worker 登録を遅らせました 。
+引用: https://developers.google.com/web/fundamentals/primers/service-workers/registration?hl=ja
+
+読み込みのタイミングをテストするには、シークレットウィンドウの DevTools でネットワークトラフィックを確認することで、SW がインストールされているタイミングを調べることができる。
+
+## SWのパフォーマンス
+> ウェブ パフォーマンスの最終的な目標は、ネットワークに依存するナビゲーション リクエストを使わなくてよいように、サブリソースのアグレッシブ キャッシュを最大限に活用することです。 Service Worker をサイト独自のアーキテクチャに合わせてきちんと構成して使用することで、それが可能になりました。
+引用: https://developers.google.com/web/fundamentals/primers/service-workers/high-performance-loading?hl=ja  
+  
+Web アプリケーションに SW を追加する最大の効果は、ページを読み込んだ時に発生するナビゲーションリクエストに応答する際にネットワーク通信による遅延がないこと。さらに SW はストリーミングでデータを読み込むため、レスポンスの最初の部分をより速く返すことができる。  
+  
+また SW には それぞれのケースに合わせて、様々なキャッシュ戦略が存在する。またこれらの戦略を実装するときは [WorkBox](https://workboxjs.org) を使うと便利。  
+代表的なものは`stale-while-revalidate`、`offline fallback`、 `App Shell`モデルである。
+
+- `stale-while-revalidate`はHTML などの静的リソースのキャッシュに向いており、SW で一度キャッシュしたら次回以降はキャッシュを優先してレスポンスを返し、裏側で最新のデータを`fetch`しておき、次回のアクセスで最新のキャッシュをレスポンスするようにする戦略である。
+- `offline fallback`は「オフラインでは使用できません」といったメッセージを含むHTMLをキャッシュしておき、SW が失敗した時にレスポンスする戦略である
+- `App Shell`モデルは SPA にとても向いているモデルで、一つの HTML ファイルをキャッシュしておくことでレスポンスを速くする
+
+詳しくは[オフライン クックブック](https://developers.google.com/web/fundamentals/instant-and-offline/offline-cookbook/?hl=ja)を見ると便利。  
+  
+**参考**  
 Service Worker について - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/primers/service-workers?hl=ja  
 
 # React [WIP]  
