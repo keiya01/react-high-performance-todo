@@ -17,6 +17,10 @@ module.exports = {
 						loader: "babel-loader"
 					}
 				]
+			},
+			{
+				test: /\.css$/,
+				use: [ "style-loader", "css-loader" ]
 			}
 		]
 	},
@@ -24,7 +28,7 @@ module.exports = {
 		alias: {
 			src: path.resolve(__dirname, "/src/")
 		},
-		extensions: [ ".ts", ".tsx", ".js", ".jsx" ]
+		extensions: [ ".ts", ".tsx", ".js", ".jsx", ".css" ]
 	},
 	plugins: [
 		new CleanWebpackPlugin(),
