@@ -34,6 +34,13 @@
 - [PRPL][#PRPL]
 - [App Shell](#App-Shell)
 - [Service Worker](#Service-Worker)
+  - [SWを使用できる条件](#SWを使用できる条件)
+  - [ライフサイクル](#ライフサイクル)
+  - [デバッグ](#デバッグ)
+  - [SW を更新する](#SW-を更新する)
+  - [注意点](#注意点)
+  - [開発](#開発)
+  - [SWを監視する](#SWを監視する)
 - [React](#React)
   - [React Performance](#React-Performance)
     - [re-render](#re-render)
@@ -315,7 +322,231 @@ App Shell には以下の要件が求められる。
 App Shell モデル - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/architecture/app-shell?hl=ja  
 Next.js ... https://nextjs.org/docs/getting-started  
 
-# Service Worker [WIP]  
+# Service Worker  
+Service Worker(SW) はブラウザが Web ページとは別にバックグラウンドで実行するスクリプトで、Web ページやユーザーのインタラクションを必要としない機能を Web にもたらす。現在では、プッシュ通知やバックグラウンド同期が使用できる。これにより、オフラインや通信の遅い環境での体験を向上させることができる。
+
+## SWを使用できる条件
+- ブラウザーがサポートしている
+- HTTPSであること
+
+## ライフサイクル
+SW を登録すると、ブラウザは SW をバックグラウンドでインストールする。インストール中にいくつかのアセットをキャッシュする。この時に1ファイルでもキャッシュの保存に失敗するとインストールは失敗し、再インストールされる。インストールに成功すると、アクティベーション処理に移行し、古いキャッシュを処理する。これが終わると、SW はページを制御するが、登録時点では制御されず次に読み込まれた時に制御されるようになる。
+
+## デバッグ
+- chrome://inspect/#service-workers や chrome://serviceworker-internals で SW が有効か確認できる
+- chrome://serviceworker-internals にアクセスし、[Open DevTools window and pause JavaScript execution on service worker startup for debugging] にチェックを入れて、install イベントの開始時に debugger 文を記述して、[Pause on uncaught exceptions](https://developers.google.com/web/tools/chrome-devtools/javascript/breakpoints?hl=ja) とともに使用すると問題を発見できる
+
+## ライフサイクル
+1. `register()`を使い、SW を登録する。
+  - この時、初めてサイトに訪れた場合はすぐ SW を登録し、すでに存在する場合、SW はファイルサイズを比較して、ファイルのサイズが増えていれば更新する
+2. `install` イベントが呼び出される
+  - `install` イベントでは主にアセットのキャッシュを行う
+  - キャッシュを開く -> キャッシュを保存する -> キャッシュが完了したことを確認する
+
+```js
+
+var CACHE_NAME = 'my-site-cache-v1';
+
+/**
+ *  キャッシュさせたいファイルを配列で宣言する
+ *  ファイル数が多くなると、キャッシュに失敗してSWのインストールが成功しない可能性もある
+*/
+var urlsToCache = [
+  '/',
+  '/styles/main.css',
+  '/script/main.js'
+];
+
+self.addEventListener('install', function(event) {
+  /**
+   * waitUntil() はインストールにかかる時間とインストールが成功したかどうかを知るために使われる
+   * cache.addAll()の結果を返すことで成功かどうかを判断する
+  */
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(function(cache) {
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
+  );
+});
+
+```
+
+3. キャッシュのレスポンスを返す
+- SW がインストールされた状態で他のページへ遷移したりページを更新したりすると SW は `fetch` イベントを受け取る
+
+```js
+
+self.addEventListener('fetch', function(event) {
+  /**
+   * cache.respondWith()は受け取った結果をレスポンスするためのメソッド
+   * キャッシュが見つかった場合はキャッシュを返し、そうでない場合は`fetch`への呼び出しの結果を返す
+  */
+  event.respondWith(
+    /**
+     * cache.match()はリクエストを確認して、SW がキャッシュしたデータの中から一致したキャッシュ全てを返す
+    */
+    caches.match(event.request)
+      .then(function(response) {
+        // キャッシュがあればresponseを返す
+        if (response) {
+          return response;
+        }
+        // キャッシュがない場合はfetchする
+        return fetch(event.request);
+      }
+    )
+  );
+});
+
+```
+
+- 新しいリクエストを逐次キャッシュさせたい場合は、以下のように書く
+
+```js
+
+self.addEventListener('fetch', function(event) {
+  event.respondWith(
+    caches.match(event.request)
+      .then(function(response) {
+        // Cache hit - return response
+        if (response) {
+          return response;
+        }
+
+        /**
+         * [重要]
+         * リクエストはストリームであるため一度しか利用することができない。
+         * cacheとbrowserで1回ずつfetchを利用しているため、必ずクローンして利用する。
+        */
+        var fetchRequest = event.request.clone();
+
+        return fetch(fetchRequest).then(
+          function(response) {
+            /**
+             * 正しいレスポンスを受け取ったか確認する
+             * response.type !== 'basic' はリクエストの送信元と送信先のドメインが
+             * 同じであることを確認している
+            */ 
+            if(!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            /**
+             * [重要]
+             * レスポンスはストリームであるため1回しか利用できない。
+             * ここではブラウザーとキャッシュで使うため、クローンする必要がある。
+            */
+            var responseToCache = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then(function(cache) {
+                cache.put(event.request, responseToCache);
+              });
+
+            return response;
+          }
+        );
+      })
+    );
+});
+
+```
+
+4. SW を更新する
+- JS が更新されるとブラウザは SW をダウンロードし、バイト数に差がある場合、新しいものとして判断される。
+- SW がインストールされると、サイトが閉じられるまで古い SW が制御権を持ち、新しい SW は`waiting`状態となる
+  - `waiting`することなくすぐに新しい SW に制御権を持たせたい場合は、`self.skipWaiting()`を使う。このメソッドは通常は`install`イベント内で呼び出される。
+  - `self.skipWaiting()` は、古いバージョンで読み込まれたページを新しい SW で制御することを意味するため、ページの`fetch`の一部は古い SW で処理され、その後の`fetch`は新しい SW で処理される事になる。これが問題になる可能性がある場合は、`self.skipWaiting()`を使用しない。
+- サイトが閉じられると、新しい SW が制御権を持ち、`activate`イベントが起こる
+- `activate`イベントでは、古いキャッシュを削除するためにキャッシュの管理を行う
+  - `activate`イベント内で`cache.claim()`を使うことで、再読み込みせずに SW がページを制御できるようになるが、通常は`cache.claim()`を使わなくても正常に動作するはずであるため、必要ない
+
+```js
+
+/**
+ * ホワイトリスト以外のキャッシュを削除する処理 
+*/
+self.addEventListener('activate', function(event) {
+
+  var cacheWhitelist = ['pages-cache-v1', 'blog-posts-cache-v1'];
+
+  event.waitUntil(
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames.map(function(cacheName) {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});
+
+```
+
+- ユーザーが再読み込みすることなく長時間利用できるようにするために以下のように手動でアップデートすることができる
+
+```js
+
+navigator.serviceWorker.register('/sw.js').then(reg => {
+  // sometime later…
+  reg.update();
+});
+
+```
+
+## 注意点
+- `fetch()`は認証情報(Cookieなど)を自動で付与しないため、`fetch(URL, {credentials: 'include'})`と指定する必要がある
+- `no-cors`オプションを設定するとレスポンスが成功したか判断できない
+- レスポンシブな画像をキャッシュする時に、全ての画像をキャッシュするのはストレージスペースの無駄使いなので、以下のように低解像度の画像か高解像度の画像どちらか一つをキャッシュするようにマークアップする
+
+```html
+  <img src="image-src.png" srcset="image-src.png 1x, image-2x.png 2x" 
+    style="width:400px; height: 400px;" />
+```
+
+## 開発
+- DevTools の Application タブ の Servise Worker を開くと、ステータスを確認したり、開発に役立つ細かい設定ができる
+- update on reload にチェックマークをつけると、リロードごとに SW がアップデートされるようになる
+- `waiting`状態の SW がある場合に、skipWaiting を押すと、`waiting`状態がスキップされる
+
+## SWを監視する
+```js
+
+navigator.serviceWorker.register('/sw.js').then(reg => {
+  reg.installing; // the installing worker, or undefined
+  reg.waiting; // the waiting worker, or undefined
+  reg.active; // the active worker, or undefined
+
+  reg.addEventListener('updatefound', () => {
+    // A wild service worker has appeared in reg.installing!
+    const newWorker = reg.installing;
+
+    newWorker.state;
+    // "installing" - the install event has fired, but not yet complete
+    // "installed"  - install complete
+    // "activating" - the activate event has fired, but not yet complete
+    // "activated"  - fully active
+    // "redundant"  - discarded. Either failed install, or it's been
+    //                replaced by a newer version
+
+    newWorker.addEventListener('statechange', () => {
+      // newWorker.state has changed
+    });
+  });
+});
+
+navigator.serviceWorker.addEventListener('controllerchange', () => {
+  // This fires when the service worker controlling this page
+  // changes, eg a new worker has skipped waiting and become
+  // the new active worker.
+});
+
+```
+
 Service Worker について - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/primers/service-workers?hl=ja  
 
 # React [WIP]  
