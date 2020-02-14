@@ -1,10 +1,10 @@
 import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 
-const Top = lazy(() => import("./Top"));
-const About = lazy(() => import("./About"));
+const Top = lazy(() => import("src/components/Top"));
+const About = lazy(() => import("src/components/About"));
 
-const App: React.FC = () => {
+const Router: React.FC = () => {
   return (
     <BrowserRouter >
       <Suspense fallback="loading...">
@@ -17,4 +17,4 @@ const App: React.FC = () => {
   );
 }
 
-export default App;
+export default Router;
