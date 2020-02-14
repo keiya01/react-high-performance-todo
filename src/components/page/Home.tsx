@@ -9,7 +9,7 @@ const Container = styled.div`
   height: 100vh;
 `;
 
-const Top: React.FC = () => {
+const Home: React.FC = () => {
   return (
     <Container>
       <h1>Top Page!</h1>
@@ -18,4 +18,4 @@ const Top: React.FC = () => {
   )
 };
 
-export default Top;
+export default Home;
