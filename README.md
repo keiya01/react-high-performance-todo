@@ -590,11 +590,11 @@ if ('serviceWorker' in navigator) {
 Web アプリケーションに SW を追加する最大の効果は、ページを読み込んだ時に発生するナビゲーションリクエストに応答する際にネットワーク通信による遅延がないこと。さらに SW はストリーミングでデータを読み込むため、レスポンスの最初の部分をより速く返すことができる。  
   
 また SW には それぞれのケースに合わせて、様々なキャッシュ戦略が存在する。またこれらの戦略を実装するときは [WorkBox](https://workboxjs.org) を使うと便利。  
-代表的なものは`stale-while-revalidate`、`offline fallback`、 `App Shell`モデルである。
+`stale-while-revalidate`、`cache-first`、`App Shell`モデルなどがある。
 
-- `stale-while-revalidate`はHTML などの静的リソースのキャッシュに向いており、SW で一度キャッシュしたら次回以降はキャッシュを優先してレスポンスを返し、裏側で最新のデータを`fetch`しておき、次回のアクセスで最新のキャッシュをレスポンスするようにする戦略である。
-- `offline fallback`は「オフラインでは使用できません」といったメッセージを含むHTMLをキャッシュしておき、SW が失敗した時にレスポンスする戦略である
-- `App Shell`モデルは SPA にとても向いているモデルで、一つの HTML ファイルをキャッシュしておくことでレスポンスを速くする
+- `stale-while-revalidate`はHTML などの静的リソースのキャッシュに向いており、SW で一度キャッシュしたら次回以降はキャッシュを優先してレスポンスを返し、裏側で最新のデータを`fetch`しておき、次回のアクセスで最新のキャッシュをレスポンスするようにする戦略である。頻繁に更新が行われるが、
+- `cache-first`はキャッシュを最初に確認し、キャッシュがなければ、ネットワークから取得する戦略である。オフラインファーストのアプリを作成するときにこのパターンが適用される。`create-react-app`のデフォルトでもこのパターンが使用されている。
+- `App Shell`モデルは SPA にとても向いているモデルで、一つの HTML ファイルをキャッシュしておくことでレスポンスを速くする。`cache-first`パターンで実現できる。
 
 詳しくは[オフライン クックブック](https://developers.google.com/web/fundamentals/instant-and-offline/offline-cookbook/?hl=ja)を見ると便利。  
   
