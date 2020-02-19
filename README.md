@@ -649,6 +649,8 @@ Reactでは再レンダリングを抑制するための手段が各コンポー
 React製のSPAのパフォーマンスチューニング実例 - リクルート ... https://recruit-tech.co.jp/blog/2018/09/19/react_spa_performance_tuning/  
 
 # Redux [WIP]
+- 無駄な再レンダリングを抑制するために、Redux Storeに値を持たせるのはほとんど全てのコンポーネントで必要となるデータのみに絞る(user info など)
+- 各コンポーネントで使うデータは各コンポーネントで宣言してしまう方がわかりやすい
 
 # SSR [WIP]
 **参考**  
