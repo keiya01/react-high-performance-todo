@@ -1,13 +1,13 @@
 import React, { Suspense } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import home from "src/components/router/home";
+import homePage from "src/components/router/homePage";
 
 const Router: React.FC = () => {
   return (
     <BrowserRouter >
       <Suspense fallback="loading...">
         <Switch>
-          <Route exact path="/" component={home}/>
+          <Route exact path="/" component={homePage}/>
         </Switch>
       </Suspense>
     </BrowserRouter>

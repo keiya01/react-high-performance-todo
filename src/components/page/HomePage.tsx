@@ -1,8 +1,13 @@
 import React from "react";
 import styled from "styled-components";
+import { Link } from "react-router-dom";
 
 
 const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   background-color: #292929;
   width: 100%;
   height: 100vh;
@@ -14,8 +19,7 @@ const TopContent = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-top: 100px;
-  margin-bottom: 30px;
+  margin-bottom: 100px;
 `;
 
 const Title = styled.h1`
@@ -29,6 +33,11 @@ const Description = styled.p`
   color: #aaa;
 `;
 
+const Anchor = styled(Link)`
+  color: #fff;
+  font-size: 2rem;
+`;
+
 const Home: React.FC = () => {
   return (
     <Container>
@@ -36,6 +45,7 @@ const Home: React.FC = () => {
         <Title>High Performance Todo</Title>
         <Description>This project for making high performance App in React.</Description>
       </TopContent>
+      <Anchor to="/todo">Go to Todo</Anchor>
     </Container>
   )
 };
