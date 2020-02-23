@@ -5,7 +5,7 @@ module.exports = merge(common, {
 	mode: "production",
 	output: {
 		filename: "[name].[contenthash].js",
-		chunkFilename: "[name].[contenthash].chunk.js"
+		chunkFilename: "[id].[contenthash].chunk.js"
 	},
 	optimization: {
 		runtimeChunk: "single",
