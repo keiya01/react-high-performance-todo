@@ -13,7 +13,7 @@
     - [strategy](#strategy)
       - [optimization.runtimeChunk](#optimization.runtimeChunk)
       - [optimization.cacheGroups.vendor](#optimization.cacheGroups.vendor)
-    - [Bundle Size の調査](#Bundle-Size-の調査)
+  - [Bundle Size の調査](#Bundle-Size-の調査)
 - [Performance](#Performance)
   - [クリティカルレンダリングパス](#クリティカルレンダリングパス)
   - [パフォーマンスバジェット](#パフォーマンスバジェット)
@@ -32,7 +32,7 @@
   - [静的レンダリング](#静的レンダリング)
   - [クライアントサイドレンダリング(CSR)](#クライアントサイドレンダリング(CSR))
   - [どれを使えば良いか](#どれを使えば良いか)
-- [PRPL][#PRPL]
+- [PRPL](#PRPL)
 - [App Shell](#App-Shell)
 - [Service Worker](#Service-Worker)
   - [SWを使用できる条件](#SWを使用できる条件)
