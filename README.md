@@ -8,6 +8,8 @@
     - [コードの重複を防ぐ](#コードの重複を防ぐ)
     - [ダイナミックインポート](#ダイナミックインポート)
   - [Minify](#Minify)
+  - [Tree Shaking](#Tree-Shaking)
+  - [Dead Code Elimination](#Dead-Code-Elimination)
   - [Cache](#Cache)
     - [ブラウザ Cache について](#ブラウザ-Cache-について)
     - [strategy](#strategy)
@@ -116,6 +118,19 @@ Code Splitting - create-react-app ... https://create-react-app.dev/docs/code-spl
 
 ## Minify
 Reactでは Production Mode でビルドすることで、自動的にminifyしてくれる(webpack v4 以降)
+
+## Tree Shaking
+`Tree Shaking`とはESMにおいて`export`されているが使われていないモジュールを洗い出してくれる機能である。この機能を使って洗い出されたコードはコメントで使われていない事が明示される。この明示されたコメントを基に`Terser`のような機能を使って使われていないモジュールの削除を行う。  
+注意点として、この機能は`import`や`export`で表現された場合にしか機能しない。なぜなら、`require`/`module.exports`でモジュールを扱った場合、代入された値が最終的にどのような値になっているかは実行してみないとわからないのである。`import`/`export`でモジュールを扱った場合、トップレベルで宣言しなければエラーになるように設計されているため、静的解析が容易に行えるのである。  
+webpackの`mode: 'development'`で`Tree Shaking`を確認するには`optimization.usedExports`を`true`にする必要がある。こうする事で`export`されているにも関わらず使用されていないモジュールにコメントが付く。  
+また、`package.json`で`sideEffects: false(default true)`にすることでコードに副作用がないことを明示できるため、webpackが安全に`Tree Shaking`を行う事ができる。全てに依存関係がないと言えない場合も、`Array`を指定する事で副作用があるファイルを指定する事ができる。例えば、`polyfill`を読み込んでいるファイルや`css-loader`のような物を使っている場合は`*.css`を明示することで明示的に副作用をwebpackに伝える事ができる。  
+`production`では`Tree Shaking`の設定は全て`true`になっているので、`sideEffects`を適切に設定する事が必要である。  
+  
+**参考**
+webpackの仕組みを簡潔に説明する ... https://blog.hiroppy.me/entry/mechanism-of-webpack  
+
+## Dead Code Elimination
+`TerserPlugin`を使って行われる。`mode: 'production'`では`default`でこれが適用されているため、基本は再設定する必要がないが、細かい設定が必要なときに追加で設定が必要となる。
 
 ## Cache  
 

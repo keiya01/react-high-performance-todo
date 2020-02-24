@@ -1,6 +1,7 @@
 {
 	"name": "react-high-performance-todo",
 	"version": "1.0.0",
+	"sideEffects": false,
 	"description": "The summary of performance for React",
 	"main": "index.js",
 	"license": "MIT",
