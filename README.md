@@ -125,10 +125,11 @@ Reactでは Production Mode でビルドすることで、自動的にminifyし�
 webpackの`mode: 'development'`で`Tree Shaking`を確認するには`optimization.usedExports`を`true`にする必要がある。こうする事で`export`されているにも関わらず使用されていないモジュールにコメントが付く。  
 また、`package.json`で`sideEffects: false(default true)`にすることでコードに副作用がないことを明示できるため、webpackが安全に`Tree Shaking`を行う事ができる。全てに依存関係がないと言えない場合も、`Array`を指定する事で副作用があるファイルを指定する事ができる。例えば、`polyfill`を読み込んでいるファイルや`css-loader`のような物を使っている場合は`*.css`を明示することで明示的に副作用をwebpackに伝える事ができる。  
 `production`では`Tree Shaking`の設定は全て`true`になっているので、`sideEffects`を適切に設定する事が必要である。  
-また、**注意すべき点**として、`Dynamic Import`を利用すると、`Tree Shaking`が行われないという問題がある。これは`import()`で返される値にアクセスできてしまうことから、`module`が書き換えられてしまっている可能性があるからである。ここに関しては`require()`と同じような問題を含んでいる。　　
+また、**注意すべき点**として、`Dynamic Import`を利用すると、`Tree Shaking`が行われないという問題がある。これは`import()`で返される値にアクセスできてしまうことから、`module`が書き換えられてしまっている可能性があるからである。`Dynamic Import`をするときに`Tree Shaking`も効かせたい場合は、別ファイルで`export { ... } from '../path/to/something'`とする。　　
   
 **参考**
 webpackの仕組みを簡潔に説明する ... https://blog.hiroppy.me/entry/mechanism-of-webpack  
+Document why tree shaking is not performed on async chunks - GitHub ... https://github.com/webpack/webpack.js.org/issues/2684  
 
 ## Dead Code Elimination
 `TerserPlugin`を使って行われる。`mode: 'production'`では`default`でこれが適用されているため、基本は再設定する必要がないが、細かい設定が必要なときに追加で設定が必要となる。
