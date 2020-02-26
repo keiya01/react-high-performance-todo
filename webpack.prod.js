@@ -12,7 +12,7 @@ module.exports = merge(common, {
 		splitChunks: {
 			cacheGroups: {
 				vendor: {
-					test: /node_modules/,
+					test: /react|react-dom|styled-components/,
 					name: "vendors",
 					chunks: "all"
 				}
