@@ -77,7 +77,7 @@ Code Splitting - React ... https://ja.reactjs.org/docs/code-splitting.html
 Webpackの機能を使ってコード分割を行う。一番簡単な方法として、`entry`に複数のファイルを書いて分割する方法を思いつくかもしれないが、この方法だと、`entry`ファイルのそれぞれにmoduleがバンドルされてしまう。例えば、`index.js`と`another.js`が存在し、`another.js`で`lodash`を使っているが、`index.js`では使っていない状況を考える。この場合、`webpack`を使って`build`すると、`index.js`と`another.js`の両方に`module`がバンドルされてしまう。こうなってしまうとコードを分割してもコード量が増えてしまい、逆にオーバーヘッドになってしまう。これを避けるには`SplitChunksPlugin`を使う必要がある。
 
 ### コードの重複を防ぐ
-コードの重複を防ぐには、`optimization.splitChunks.chunks`を`all`に設定する。しかし、`optimization.splitChunks.chunks`に直接`all`を指定すると、全てのファイルがコード分割されてしまうことで頻繁に内容が更新されることになり、キャッシュの恩恵を受けられないことがある([optimization.cacheGroups.vendor](#optimization.cacheGroups.vendor))。
+コードの重複を防ぐには、`optimization.splitChunks.chunks`を`all`に設定する。しかし、`optimization.splitChunks.chunks`に直接`all`を指定すると、`splitChunks`の設定をみたす全てのコードが分割されてしまうことで頻繁に内容が更新されるコードも含まれることになり、キャッシュの恩恵を受けられないことがある([optimization.cacheGroups.vendor](#optimization.cacheGroups.vendor))。  
 
 ### ダイナミックインポート
 ダイナミックインポート(`import()`)を使うことで、特定のファイルにbuild時の設定を組み込むことができたり、指定したmoduleを分割することができる。また、Reactを使っている時は、`lazy()`と`Suspense`コンポーネントを使うことで、コードを分割できる。SSRを使用している場合は [loadable-component](https://loadable-components.com/) を使うとコード分割を利用できる。  
@@ -149,7 +149,7 @@ runtimeをメインのコードから分けるために使用される。`single
 
 #### optimization.cacheGroups.vendor
 
-`vendor`を設定すると、特定のmoduleのコードを分割することができる。更新頻度の少ないmoduleを分割することで、キャッシュを効率的に行うことができ、requestの回数を減らすことができる。例えば、`node_modules`は頻繁に更新される`module`ではないので、`node_modules`を分割することで効率的にキャッシュを行うことができる。
+`vendor`を設定すると、特定のmoduleのコードを分割することができる。更新頻度の少ないmoduleを分割することで、キャッシュを効率的に行うことができ、requestの回数を減らすことができる。例えば、`node_modules`は頻繁に更新される`module`ではないので、`node_modules`を分割することで効率的にキャッシュを行うことができる。  
 
 ```json
   {
@@ -165,6 +165,8 @@ runtimeをメインのコードから分けるために使用される。`single
     }
   }
 ```
+
+ここで`enforce`を`true`に設定する事で`splitChunks.minSize`、`splitChunks.minChunks`、 `splitChunks.maxAsyncRequests`、 `splitChunks.maxInitialRequests`を無視して`chunk`を作成する。  
 
 **参照**  
 Cache - Webpack ... https://webpack.js.org/guides/caching/  
