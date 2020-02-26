@@ -45,7 +45,7 @@ const Home: React.FC = () => {
         <Title>High Performance Todo</Title>
         <Description>This project for making high performance App in React.</Description>
       </TopContent>
-      <Anchor to="/todo">Go to Todo</Anchor>
+      <Anchor to="/todo">Let's Start</Anchor>
     </Container>
   )
 };
