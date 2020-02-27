@@ -38,10 +38,13 @@
     - [useMemo()/useCallback()](#useMemo()/useCallback())
     - [List](#List)
     - [コンポーネントを細かく分ける](#コンポーネントを細かく分ける)
+    - [表示されていない領域のDOMを生成しないようにする](#表示されていない領域のDOMを生成しないようにする)
+    - [Formの最適化](#Formの最適化)
     - [パフォーマンスの測定](#パフォーマンスの測定)
+- [パフォーマンス改善の手順](#パフォーマンス改善の手順)
 - [Redux](#Redux)
 - [SSR](#SSR)
-- [その他のツール](#その他のツール)
+- [開発に便利なライブラリー メモ](#開発に便利なライブラリー メモ)
 
 # About  
 - React または SPA 開発に役立つ Webpack の設定や、Performance 改善の方法を調べた
@@ -493,6 +496,15 @@ Web アプリケーションに SW を追加する最大の効果は、ページ
 **参考**  
 Service Worker について - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/primers/service-workers?hl=ja  
 
+# パフォーマンス改善の手順
+
+1. 計測する(CPUやネットワークなどの環境を変えながら)
+2. 遅いところをピックアップする
+3. なぜ遅いのか調査する
+4. 遅いところを見つけたらテストが書かれていることを確認し、更新する
+5. 計測する
+6. パフォーマンスが向上していればOK
+
 # React [WIP]  
 
 ## React Performance  
@@ -527,6 +539,22 @@ Reactでは再レンダリングを抑制するための手段が各コンポー
 ### 表示されていない領域のDOMを生成しないようにする
 長いデータのリスト（数百〜数千行）をレンダーする場合、実際に画面には写っていない部分も再レンダリングされてしまい、処理が無駄になってしまう。そのため見えている部分のみ画面に表示して、無駄な処理を減らす必要がある。`react-virtualized`が有名だが、`react-window`の方が軽量でよさそう。`react-vertualized`のGitHubにも`react-window`の方が軽いと書かれている。
 
+### Formの最適化
+
+入力に基づいて何らかのstyleを変更するような処理などを含んでいると重くなる事がある。特に入力の動作は常にレンダリングが走る部分になるため、注意しなければいけない。改善方法は以下の通りである。
+
+- `debouce`を用いて一定の間隔で処理を行うようにする
+- 非制御コンポーネントを使う
+  - 非制御コンポーネントは`ref`にDOMの状態を持たせて、必要なタイミングで処理を施すようにする事でレンダリングの回数を減らし、パフォーマンスを改善できる
+  - この方法は仮想DOMの構造を崩すことになるため React Document では推奨はされていないように見える。Reactにおいて変更されうる状態は`state`に保持する事で`Component`を結合された状態に保つ必要がある。`ref`によって仮想DOMとリアルDOMを混合してしまうことにより、理解が難しくなったり、宣言的ではなくなったりする。
+  - パフォーマンス最適化としては`ref`を使用するのも有りなようなので状況に合わせて使う分けるのが良さそう
+  - 使い分けは https://goshakkk.name/controlled-vs-uncontrolled-inputs-react に載っている
+
+**参考**  
+Airシフトにおけるパフォーマンス改善とリファクタリング事例 - リクルート ... https://recruit-tech.co.jp/blog/2020/02/14/performance-and-refactoring/  
+非制御コンポーネント(Uncontrolled component) - React ... https://ja.reactjs.org/docs/uncontrolled-components.html  
+Controlled and uncontrolled form inputs in React don't have to be - Gosha Arinich ... https://goshakkk.name/controlled-vs-uncontrolled-inputs-react/  
+
 ### パフォーマンスの測定
 パフォーマンスを計測する時には、Production Mode でビルドしてから計測することが大切である。なぜなら、Developmet Mode で計測してしまうと、Development 用の Error や Worning の処理が含まれてしまい、Production Mode と比べて Performance が落ちてしまう可能性があるため。また、デプロイするときも Production でデプロイすることを忘れないようにすることも大切。
 
@@ -549,5 +577,8 @@ React製のSPAのパフォーマンスチューニング実例 - リクルート
 Speedier Server-Side Rendering in React 16 with Component Caching - medium ... https://medium.com/@reactcomponentcaching/speedier-server-side-rendering-in-react-16-with-component-caching-e8aa677929b1 [未読]  
 Hastening React SSR with component memoization and templatization - Speaker Deck ... https://speakerdeck.com/maxnajim/hastening-react-ssr-with-component-memoization-and-templatization [未読]  
 
-# その他のツール
-- モバイルフレンドリー テスト ... https://search.google.com/test/mobile-friendly?hl=ja
+# 開発に便利なライブラリー メモ
+- [reg-suit](https://github.com/reg-viz/reg-suit) ... `snapshots`を可視化して差分を教えてくれるツール
+- [docz](https://github.com/doczjs/docz) ... `docz`は`story-book`よりも軽量で設定やドキュメント作成が楽なツールである。
+- [scaffdog](https://github.com/cats-oss/scaffdog) ... `md`を書くと簡単に`React`のテンプレートを生成してくれるツール
+- [モバイルフレンドリー テスト](https://search.google.com/test/mobile-friendly?hl=ja)
