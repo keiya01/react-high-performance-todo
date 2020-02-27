@@ -51,7 +51,7 @@
 
 # Webpack  
 
-[webpack-deep-dive](https://github.com/keiya01/webpack-deep-dive)
+webpackについては[webpack-deep-dive](https://github.com/keiya01/webpack-deep-dive)を参照してください
 
 # Performance
 
