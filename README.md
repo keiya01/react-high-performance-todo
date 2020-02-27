@@ -121,7 +121,7 @@ https://developers.google.com/web/fundamentals/performance/user-centric-performa
 - dev tools の timeline タブを使うことでstyle計算の処理時間を見ることができる
 - float よりも flexbox の方が高速
 - レイアウト処理(width, height, z-index, position, etc...)を変更するとドキュメント全体に適用され、計算量が多くなるため出来るだけ変更するのを避ける
-- ある要素からレイアウトを参照しようとする時(offsetHeightなど)に、レイアウトの変更を行ってから参照しようとすると、ブラウザは正しい結果を返すために変更されたレイアウトを計算してから結果を参照できるようにするため、参照が遅れる。そのためレイアウトを参照してから変更するようにしたほうが良い
+- ある要素からレイアウトを参照しようとする時(offsetHeightなど)に、レイアウトの変更を行ってから参照しようとすると、ブラウザは正しい結果を返すために変更されたレイアウトを計算してから結果を参照できるようにするため、参照が遅れる。そのためレイアウトを参照してから変更するようにしたほうが良い([強制同期レイアウトの回避](https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing?#%E5%BC%B7%E5%88%B6%E5%90%8C%E6%9C%9F%E3%83%AC%E3%82%A4%E3%82%A2%E3%82%A6%E3%83%88%E3%81%AE%E5%9B%9E%E9%81%BF))
 
 #### Paint
 - 文字色・背景色・影などの Paint 処理で行われるプロパティーの変更はとても重い処理になるため、避ける
