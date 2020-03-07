@@ -212,6 +212,17 @@ Resource Hints とは 今後必要になるであろうリソースをブラウ�
 Resource Hints API でリソースの投機的取得 - jxck blog ... https://blog.jxck.io/entries/2016-02-11/resource-hints.html  
 リソースの優先度付け - ブラウザの有用性を高める - Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/resource-prioritization?hl=ja  
 
+### Nginx
+- Node.js の static site のレスポンスは遅いと言われている。
+- Node.js は静的ファイルを扱うときに必要となる、レスポンスヘッダーを設定するような処理やMIMEタイプなどの計算処理が得意ではない。
+- Node.js はレスポンスを返さないと次のリクエストを捌けないが、レスポンス周りの処理がボトルネックになってしまうため、レスポンスが遅くなる
+- そのため、Node.js にはビジネスロジックを任せ、レスポンス周りの処理をNginxに任せると上手く回る。
+- Nginx はMIMEタイプの計算やレスポンスの設定などの処理を効率的に行えるためレスポンスを早く返すことができる
+- 静的ファイルを扱うときは静的ファイルのレスポンスのみをNginxに任せる方が効率が良い
+
+**参考**  
+HashNode ... https://hashnode.com/post/why-is-it-not-recommended-to-serve-static-files-from-nodejs-ciibz8flv01duj3xt4lxuomp3
+
 ### HTTP2
 
 ### HTTP キャッシュ
