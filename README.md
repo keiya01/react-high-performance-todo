@@ -1,6 +1,7 @@
 # React Hight Performance Todo
 
 - [About](#About)
+- [パフォーマンスチューニングの手順](#パフォーマンスチューニングの手順)
 - [Webpack](#Webpack)
 - [Performance](#Performance)
   - [クリティカルレンダリングパス](#クリティカルレンダリングパス)
@@ -10,10 +11,14 @@
     - [ツール](#ツール)
   - [レンダリング](#レンダリング)
     - [仕組み](#仕組み)
+    - [HTML パフォーマンス](#HTML-パフォーマンス)
     - [JavaScript パフォーマンス](#JavaScript-パフォーマンス)
     - [CSS パフォーマンス](#CSS-パフォーマンス)
   - [ローディングパフォーマンス](#ローディングパフォーマンス)
-  - [HTTP キャッシュ](#HTTP-キャッシュ)
+  - [ネットワーク処理](#ネットワーク処理)
+    - [Resource Hints API](#Resource-Hints-API)
+    - [HTTP2](#HTTP2)
+    - [HTTP キャッシュ](#HTTP-キャッシュ)
   - [RAILモデル](#RAILモデル)
 - [最適なレンダリング手法](#最適なレンダリング手法)
   - [サーバーサイドレンダリング(SSR)](#サーバーサイドレンダリング(SSR))
@@ -44,13 +49,21 @@
 - [パフォーマンス改善の手順](#パフォーマンス改善の手順)
 - [Redux](#Redux)
 - [SSR](#SSR)
-- [開発に便利なライブラリー メモ](#開発に便利なライブラリー メモ)
+- [開発に便利なライブラリー メモ](#開発に便利なライブラリー-メモ)
 
 # About  
 - React または SPA 開発に役立つ Webpack の設定や、Performance 改善の方法を調べた
 - 少しずつ実装していき、ベストな方法を探っていきたい
 - このリポジトリーでは React と TypeScript を使って開発している
 - 基本的には Babel と Webpack を使って環境を構築している  
+
+# パフォーマンスチューニングの手順
+
+1. 見た目が変わってもすぐわかるように[reg-suit](https://github.com/reg-viz/reg-suit)などのツールを設定しておく
+2. 計測する(dev tools の Light House, Performance etc)
+3. 遅いところを洗い出す
+4. Light House で示されているヒントを改善していく -> ある程度点数を稼げたら、performanceタブをみながら改善
+5. 計測する
 
 # Webpack  
 
@@ -59,8 +72,11 @@ webpackについては[webpack-deep-dive](https://github.com/keiya01/webpack-dee
 # Performance
 
 ## クリティカルレンダリングパス
-- クリティカルレンダリングパスとは、HTML、CSS、 JavaScript のバイトの受信から、これらをピクセルとしてレンダリングするために必要な処理までの中間段階で行われている内容を理解してパフォーマンスの最適化を行うこと
-- クリティカルレンダリングパスの最適化は、現在のユーザー操作に関連するコンテンツ表示の優先順位付けを意味する
+- クリティカルレンダリングパスとは、HTML、CSS、 JavaScript のバイトの受信から、これらをピクセルとしてレンダリングするために必要な処理を最適化する事
+- script を非同期で読み込むようにする(async, defer)
+- css は css critical を意識する
+  - 一番最初に画面に映る style 以外は全部後から読み込むようにする考え方
+  - css critical に読み込むライブラリーも多くある
 
 ## パフォーマンスバジェット
 
@@ -102,7 +118,15 @@ https://developers.google.com/web/fundamentals/performance/user-centric-performa
 - Layoutが最も重い処理となり、次にPaintが重い。高頻度でStyleが変更される場合、Compositeのみで処理される`transform`と`opacity`に絞った方が良い。
 - [css trigger](https://csstriggers.com) を見ると、どの要素がどこで適用されるのかわかる
 
+### HTML パフォーマンス
+- タグが多すぎると、規模が大きくなるにつれて、ボトルネックになっていく
+  - 必要なタグのみを使うようにしてデータを減らすようにする
+
 ### JavaScript パフォーマンス
+- `defer`属性による読み込みで、並列にダウンロードしつつ、HTMLが読み込まれた後に実行することができる
+  - 基本はこれを指定すると良い
+- `async`属性は並列でダウンロードしつつ、読み込みが終わったタイミングでスクリプトを実行するため、クリティカルレンダリングパスを止めてしまう可能性がある。
+  - 広告などの外部のリソースを読み込むときは良い
 - タイミングの悪いスクリプトや長時間実行されるスクリプトはパフォーマンス低下の原因になる
 - フレームがずれて実行される可能性があるため `setTimeout` や `setInterval` を使用するのを避けて `requestAnimationFrame` を使用するようにする
 - スクロール操作のようなアニメーションでは、JavaScript の実行時間を 3～4 ミリ秒に抑えることが理想的
@@ -139,12 +163,58 @@ https://developers.google.com/web/fundamentals/performance/user-centric-performa
 レンダリング パフォーマンス - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/rendering?hl=ja  
 猫でもわかるスクロールイベントパフォーマンス改善ポイント2018 - Qiita ... https://qiita.com/kikuchi_hiroyuki/items/7ac41f58891d96951fa1#requestanimationframe  
 
+#### CSS の仕組み
+- CSS のセレクターは`右から左`に探索される。
+```css
+
+.test > .test1 {...}
+
+/* よりも */
+
+.test {...}
+
+/* というように固有の名前をつけた方が良い */
+
+```
+
+- 一番右の要素は`キーセレクター`と呼ばれる。
+- このキーセレクターを指定するとスタイルの適用が遅くなってしまう
+
+**参考**  
+- ＜CSS＞サイトの表示速度を意識したセレクタの書き方 ... https://qiita.com/mamiyan/items/778183160e9e58546824  
+
+#### ファイルサイズの削減
+- CSS は量が多いと読み込みが遅くなり、ボトルネックになっていく
+  - 必要な部分で読み込むようにする
+  - 使っていない CSS は消すようにする
+  - 使っていない CSS を見つけるためには `dev tools` => `more tools` => `coverage` で計測することができる
+  - Unused CSS を消す方法 ... https://blog.cybozu.io/entry/2019/08/20/170000
+
 ## ローディングパフォーマンス [WIP]
 
 **参考**  
 Loading Performance - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/get-started?hl=ja [WIP]
 
-## HTTP キャッシュ [WIP]
+## ネットワーク処理
+
+### Resource Hints API
+Resource Hints とは 今後必要になるであろうリソースをブラウザに伝えておくことで、予め準備をしておいてもらうものである。  
+
+- `dns-prefetch` ... メインページで接続するAPIやCDNのエッジへの名前解決を行うときに、DNSへのリクエストを事前に行い、キャッシュしておくことで、名前解決コストを下げる。
+  - すでに接続先のドメインがわかっているが、接続する具体的なURIまでは定まらないときに使う
+- `preconnect` ... APIエンドポイントは決まっていてそこに対して、連続したリクエストが発生するとわかっているような場合に、DNS の解決に加えて TCP の接続まで確立しておくことで、リクエストをすぐにでも発行できるようにすることができる
+  - すでに接続先がわかっていて、URIはわかっているが、レスポンスが動的なため`prefetch`ができないときに使う
+- `prefetch` ... 静的リソースがある場合に事前に取得してブラウザにキャッシュする手法である
+  - すでにURIがわかっていて、静的リソース、もしくは投機的に取得しても問題のないコンテンツ
+- `prerender` ... `prefetch` 可能なリソースのみからなるページならば、ページ全体を事前に取得することが可能。そこでそのページ全体を取得し、バックグラウンドに起こしたタブの中で描画まで行ってしまう方法
+
+**参考**  
+Resource Hints API でリソースの投機的取得 - jxck blog ... https://blog.jxck.io/entries/2016-02-11/resource-hints.html  
+リソースの優先度付け - ブラウザの有用性を高める - Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/resource-prioritization?hl=ja  
+
+### HTTP2
+
+### HTTP キャッシュ
 
 **参考**  
 HTTP キャッシュ - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching?hl=ja  
@@ -496,15 +566,6 @@ Web アプリケーションに SW を追加する最大の効果は、ページ
 **参考**  
 Service Worker について - Google Web Fundamentals ... https://developers.google.com/web/fundamentals/primers/service-workers?hl=ja  
 
-# パフォーマンス改善の手順
-
-1. 計測する(CPUやネットワークなどの環境を変えながら)
-2. 遅いところをピックアップする
-3. なぜ遅いのか調査する
-4. 遅いところを見つけたらテストが書かれていることを確認し、更新する
-5. 計測する
-6. パフォーマンスが向上していればOK
-
 # React [WIP]  
 
 ## React Performance  
@@ -576,6 +637,12 @@ React製のSPAのパフォーマンスチューニング実例 - リクルート
 **参考**  
 Speedier Server-Side Rendering in React 16 with Component Caching - medium ... https://medium.com/@reactcomponentcaching/speedier-server-side-rendering-in-react-16-with-component-caching-e8aa677929b1 [未読]  
 Hastening React SSR with component memoization and templatization - Speaker Deck ... https://speakerdeck.com/maxnajim/hastening-react-ssr-with-component-memoization-and-templatization [未読]  
+
+# パフォーマンス計測 [WIP]
+
+**参考**  
+Lighthouseの計測結果を見ていく - Qiita ... https://qiita.com/nightyknite/items/22d9f818dbab9bf171a3  
+
 
 # 開発に便利なライブラリー メモ
 - [reg-suit](https://github.com/reg-viz/reg-suit) ... `snapshots`を可視化して差分を教えてくれるツール
