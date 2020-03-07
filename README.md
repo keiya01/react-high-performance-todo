@@ -62,7 +62,7 @@
 1. 見た目が変わってもすぐわかるように[reg-suit](https://github.com/reg-viz/reg-suit)などのツールを設定しておく
 2. 計測する(dev tools の Light House, Performance etc)
 3. 遅いところを洗い出す
-4. Light House で示されているヒントを改善していく -> ある程度点数を稼げたら、performanceタブをみながら改善
+4. Light House で示されているヒントを改善していく -> ある程度点数を稼げたら、ベストプラクティスをみたり、performanceタブをみながら改善
 5. 計測する
 
 # Webpack  
